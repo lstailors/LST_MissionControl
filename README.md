@@ -11,6 +11,22 @@ A premium native Windows desktop client for [OpenClaw](https://github.com/opencl
 
 ---
 
+## 📸 Screenshots
+
+### Arabic Interface (RTL)
+![Arabic Chat](screenshots/chat-arabic.png)
+
+### English Interface (LTR)
+![English Chat](screenshots/chat-english.png)
+
+### Settings (Arabic)
+![Settings Arabic](screenshots/settings-arabic.png)
+
+### Settings (English)
+![Settings English](screenshots/settings-english.png)
+
+---
+
 ## ✨ Features
 
 ### 💬 Chat
