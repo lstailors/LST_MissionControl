@@ -1,0 +1,97 @@
+{
+  "app": {
+    "name": "AEGIS",
+    "fullName": "Advanced Executive General Intelligence System",
+    "version": "v3"
+  },
+  "connection": {
+    "connected": "Connected",
+    "connecting": "Connecting...",
+    "disconnected": "Disconnected",
+    "connectingBanner": "Connecting to Gateway...",
+    "disconnectedBanner": "Not connected to Gateway",
+    "reconnect": "Reconnect",
+    "connectedReady": "✅ Connected — Type your message",
+    "waitingConnection": "Waiting for connection..."
+  },
+  "titlebar": {
+    "minimize": "Minimize",
+    "maximize": "Maximize",
+    "restore": "Restore",
+    "close": "Close"
+  },
+  "sidebar": {
+    "settings": "Settings",
+    "tokenUsage": "Token Usage",
+    "context": "context",
+    "mainSession": "Main Session",
+    "sessions": "Sessions",
+    "model": "Model",
+    "critical": "Critical",
+    "high": "High",
+    "normal": "Normal",
+    "low": "Low",
+    "tokens": "Tokens",
+    "compression": "Compress",
+    "active": "Active",
+    "now": "Now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago"
+  },
+  "chat": {
+    "messageCount": "{{count}} messages",
+    "refresh": "Refresh",
+    "loadingHistory": "Loading conversations...",
+    "newMessages": "New messages",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "resend": "Resend"
+  },
+  "input": {
+    "placeholder": "Type your message...",
+    "placeholderDisconnected": "Disconnected",
+    "send": "Send (Enter)",
+    "stop": "Stop",
+    "attachImage": "Attach image",
+    "screenshot": "Screenshot",
+    "voiceRecord": "Voice record",
+    "emoji": "Emoji",
+    "imageOnly": "⚠️ Gateway only supports images currently"
+  },
+  "screenshot": {
+    "title": "Screenshot",
+    "fullScreen": "Full Screen",
+    "fullScreenDesc": "Minimizes app and captures screen",
+    "openWindows": "Open Windows ({{count}})",
+    "loading": "Loading windows...",
+    "noWindows": "No open windows"
+  },
+  "voice": {
+    "cancel": "Cancel",
+    "sendRecording": "Send recording",
+    "voiceMessage": "🎤 Voice message ({{seconds}}s)",
+    "micError": "⚠️ Could not access microphone. Check permissions."
+  },
+  "settings": {
+    "title": "⚙️ Settings",
+    "gatewayUrl": "🔌 Gateway WebSocket URL",
+    "gatewayToken": "🔑 Gateway Token",
+    "sharedFolder": "📁 Shared Folder",
+    "globalHotkey": "⌨️ Global Hotkey",
+    "compressImages": "🗜️ Compress images before sending",
+    "startWithWindows": "🚀 Start with Windows",
+    "language": "🌐 Language",
+    "test": "Test",
+    "save": "Save",
+    "saved": "Saved!",
+    "testSuccess": "✅ Connected successfully!",
+    "testFailed": "❌ Connection failed"
+  },
+  "languages": {
+    "ar": "العربية",
+    "en": "English"
+  },
+  "audio": {
+    "loadError": "⚠️ Failed to load audio file"
+  }
+}

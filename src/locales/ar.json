@@ -1,0 +1,97 @@
+{
+  "app": {
+    "name": "AEGIS",
+    "fullName": "Advanced Executive General Intelligence System",
+    "version": "v3"
+  },
+  "connection": {
+    "connected": "متصل",
+    "connecting": "جاري الاتصال...",
+    "disconnected": "غير متصل",
+    "connectingBanner": "جاري الاتصال بالـ Gateway...",
+    "disconnectedBanner": "غير متصل بالـ Gateway",
+    "reconnect": "إعادة الاتصال",
+    "connectedReady": "✅ متصل — اكتب رسالتك",
+    "waitingConnection": "في انتظار الاتصال..."
+  },
+  "titlebar": {
+    "minimize": "تصغير",
+    "maximize": "تكبير",
+    "restore": "استعادة",
+    "close": "إغلاق"
+  },
+  "sidebar": {
+    "settings": "الإعدادات",
+    "tokenUsage": "استهلاك التوكنز",
+    "context": "سياق",
+    "mainSession": "الجلسة الرئيسية",
+    "sessions": "الجلسات",
+    "model": "الموديل",
+    "critical": "حرج",
+    "high": "مرتفع",
+    "normal": "طبيعي",
+    "low": "منخفض",
+    "tokens": "توكنز",
+    "compression": "ضغط",
+    "active": "نشطة",
+    "now": "الآن",
+    "minutesAgo": "قبل {{count}} د",
+    "hoursAgo": "قبل {{count}} س"
+  },
+  "chat": {
+    "messageCount": "{{count}} رسالة",
+    "refresh": "تحديث",
+    "loadingHistory": "جاري تحميل المحادثات...",
+    "newMessages": "رسائل جديدة",
+    "copy": "نسخ",
+    "copied": "تم النسخ!",
+    "resend": "إعادة إرسال"
+  },
+  "input": {
+    "placeholder": "اكتب رسالتك...",
+    "placeholderDisconnected": "غير متصل",
+    "send": "إرسال (Enter)",
+    "stop": "إيقاف (Stop)",
+    "attachImage": "إرفاق صورة",
+    "screenshot": "سكرين شوت",
+    "voiceRecord": "تسجيل صوتي",
+    "emoji": "إيموجي",
+    "imageOnly": "⚠️ الـ Gateway يدعم الصور فقط حالياً"
+  },
+  "screenshot": {
+    "title": "سكرين شوت",
+    "fullScreen": "الشاشة كاملة",
+    "fullScreenDesc": "يصغّر التطبيق ويصور الشاشة",
+    "openWindows": "النوافذ المفتوحة ({{count}})",
+    "loading": "جاري تحميل النوافذ...",
+    "noWindows": "ما في نوافذ مفتوحة"
+  },
+  "voice": {
+    "cancel": "إلغاء",
+    "sendRecording": "إرسال التسجيل",
+    "voiceMessage": "🎤 رسالة صوتية ({{seconds}} ثانية)",
+    "micError": "⚠️ ما قدرت أوصل للمايكروفون. تأكد من الصلاحيات."
+  },
+  "settings": {
+    "title": "⚙️ الإعدادات",
+    "gatewayUrl": "🔌 Gateway WebSocket URL",
+    "gatewayToken": "🔑 Gateway Token",
+    "sharedFolder": "📁 المجلد المشترك",
+    "globalHotkey": "⌨️ اختصار عالمي",
+    "compressImages": "🗜️ ضغط الصور قبل الإرسال",
+    "startWithWindows": "🚀 بدء مع Windows",
+    "language": "🌐 اللغة",
+    "test": "اختبار",
+    "save": "حفظ",
+    "saved": "تم الحفظ!",
+    "testSuccess": "✅ متصل بنجاح!",
+    "testFailed": "❌ فشل الاتصال"
+  },
+  "languages": {
+    "ar": "العربية",
+    "en": "English"
+  },
+  "audio": {
+    "loadError": "⚠️ تعذر تحميل الملف الصوتي"
+  }
+}
