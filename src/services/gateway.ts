@@ -48,8 +48,70 @@ class GatewayService {
   private currentRunId: string | null = null;
   private currentStreamContent: string = '';
 
+  // ── Heartbeat (activity-based dead connection detection) ──
+  private heartbeatTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly HEARTBEAT_DEAD_MS = 45_000; // No traffic for 45s = dead
+
+  // ── Message Queue (buffer while disconnected) ──
+  private messageQueue: Array<{ message: string; attachments?: any[]; sessionKey?: string }> = [];
+  private readonly MAX_QUEUE_SIZE = 50;
+
   private url = '';
   private token = '';
+
+  // ── Heartbeat Management (activity-based) ──
+  // Any incoming message resets the timer. If no traffic for HEARTBEAT_DEAD_MS → reconnect.
+
+  private startHeartbeat() {
+    this.resetHeartbeat();
+  }
+
+  private resetHeartbeat() {
+    if (this.heartbeatTimer) clearTimeout(this.heartbeatTimer);
+    if (!this.connected) return;
+    this.heartbeatTimer = setTimeout(() => {
+      console.warn('[GW] ❌ No traffic for', this.HEARTBEAT_DEAD_MS / 1000, 's — connection dead');
+      this.ws?.close(4000, 'Heartbeat timeout');
+    }, this.HEARTBEAT_DEAD_MS);
+  }
+
+  private stopHeartbeat() {
+    if (this.heartbeatTimer) { clearTimeout(this.heartbeatTimer); this.heartbeatTimer = null; }
+  }
+
+  // ── Message Queue Management ──
+
+  private enqueueMessage(message: string, attachments?: any[], sessionKey?: string) {
+    if (this.messageQueue.length >= this.MAX_QUEUE_SIZE) {
+      console.warn('[GW] Queue full — dropping oldest message');
+      this.messageQueue.shift();
+    }
+    this.messageQueue.push({ message, attachments, sessionKey });
+    console.log('[GW] 📦 Queued message — queue size:', this.messageQueue.length);
+  }
+
+  private async flushQueue() {
+    if (this.messageQueue.length === 0) return;
+    console.log('[GW] 📤 Flushing', this.messageQueue.length, 'queued messages');
+    // Copy and clear — prevent re-entrancy issues
+    const queued = [...this.messageQueue];
+    this.messageQueue = [];
+    for (const item of queued) {
+      try {
+        await this.sendMessage(item.message, item.attachments, item.sessionKey);
+      } catch (err) {
+        console.error('[GW] Failed to flush queued message:', err);
+        // Re-queue failed messages at the front
+        this.messageQueue.unshift(item);
+        break; // Stop flushing — connection might be dead again
+      }
+    }
+  }
+
+  /** Number of messages waiting in the offline queue */
+  getQueueSize(): number {
+    return this.messageQueue.length;
+  }
 
   // ── Setup ──
 
@@ -122,6 +184,7 @@ class GatewayService {
 
     this.ws.onclose = (event) => {
       console.log('[GW] Closed:', event.code, event.reason);
+      this.stopHeartbeat();
       this.connected = false;
       this.connecting = false;
       this.ws = null;
@@ -137,6 +200,7 @@ class GatewayService {
   }
 
   disconnect() {
+    this.stopHeartbeat();
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
@@ -164,7 +228,10 @@ class GatewayService {
           this.connected = true;
           this.connecting = false;
           this.reconnectAttempt = 0;
+          this.startHeartbeat();
           this.emitStatus();
+          // Flush any messages queued while disconnected
+          this.flushQueue();
         } else {
           const err = response.error?.message || JSON.stringify(response);
           console.error('[GW] ❌ Handshake failed:', err);
@@ -194,7 +261,7 @@ class GatewayService {
           mode: 'ui',
         },
         role: 'operator',
-        scopes: ['operator.read', 'operator.write'],
+        scopes: ['operator.read', 'operator.write', 'operator.admin'],
         caps: ['streaming'],
         commands: [],
         permissions: {},
@@ -208,6 +275,12 @@ class GatewayService {
   // ── Send Message ──
 
   async sendMessage(message: string, attachments?: any[], sessionKey = 'agent:main:main'): Promise<any> {
+    // Queue message if disconnected instead of throwing
+    if (!this.ws || !this.connected) {
+      this.enqueueMessage(message, attachments, sessionKey);
+      return { queued: true, queueSize: this.messageQueue.length };
+    }
+
     // Gateway expects: { type, mimeType, content (base64 string), fileName }
     // content = raw base64 (NOT data URI) — Gateway normalizes it internally
     const gwAttachments = attachments?.map((att) => {
@@ -238,6 +311,22 @@ class GatewayService {
     return this.request('sessions.list', {});
   }
 
+  async getAgents(): Promise<any> {
+    return this.request('agents.list', {});
+  }
+
+  async createAgent(agent: { id: string; name?: string; model?: string; workspace?: string }): Promise<any> {
+    return this.request('agents.create', agent);
+  }
+
+  async updateAgent(agentId: string, patch: { name?: string; model?: string; workspace?: string }): Promise<any> {
+    return this.request('agents.update', { agentId, ...patch });
+  }
+
+  async deleteAgent(agentId: string): Promise<any> {
+    return this.request('agents.delete', { agentId });
+  }
+
   async getHistory(sessionKey: string, limit = 200): Promise<any> {
     return this.request('chat.history', { sessionKey, limit });
   }
@@ -252,6 +341,11 @@ class GatewayService {
 
   async getSessionStatus(sessionKey = 'agent:main:main'): Promise<any> {
     return this.request('sessions.list', {});
+  }
+
+  // ── Generic RPC call (for cron, tools, etc.) ──
+  async call(method: string, params: any = {}): Promise<any> {
+    return this.request(method, params);
   }
 
   // ── Status ──
@@ -281,6 +375,9 @@ class GatewayService {
   }
 
   private handleMessage(msg: any) {
+    // Any incoming message = connection alive — reset heartbeat timer
+    this.resetHeartbeat();
+
     // Response
     if (msg.type === 'res' && msg.id) {
       const pending = this.pendingRequests.get(msg.id);
@@ -321,6 +418,14 @@ class GatewayService {
     // Only handle "chat" events
     if (event !== 'chat') {
       console.log('[GW] Non-chat event:', event);
+      return;
+    }
+
+    // Filter out events from isolated cron/sub-agent sessions
+    // Only show messages from main session or sessions the user explicitly opened
+    const sessionKey = p.sessionKey || '';
+    if (sessionKey && sessionKey !== 'agent:main:main') {
+      console.log('[GW] Ignoring event from isolated session:', sessionKey);
       return;
     }
 

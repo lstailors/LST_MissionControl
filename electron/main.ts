@@ -82,7 +82,72 @@ function saveConfig(newConfig: Partial<AegisConfig>): void {
 // ═══════════════════════════════════════════════════════════
 
 let mainWindow: BrowserWindow | null = null;
+let splashWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
+
+function createSplashWindow(): void {
+  splashWindow = new BrowserWindow({
+    width: 400,
+    height: 300,
+    frame: false,
+    transparent: true,
+    resizable: false,
+    skipTaskbar: true,
+    alwaysOnTop: true,
+    center: true,
+    webPreferences: { nodeIntegration: false, contextIsolation: true },
+  });
+
+  const splashHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8">
+    <style>
+      * { margin:0; padding:0; box-sizing:border-box; }
+      body {
+        background: rgba(10,10,20,0.95);
+        border-radius: 20px;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        height: 100vh; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        -webkit-app-region: drag;
+        overflow: hidden;
+      }
+      .logo {
+        width: 72px; height: 72px; border-radius: 18px;
+        background: linear-gradient(135deg, #4EC9B0, #6C9FFF);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 32px; font-weight: 700; color: white;
+        box-shadow: 0 8px 32px rgba(78,201,176,0.3);
+        animation: float 2s ease-in-out infinite;
+      }
+      @keyframes float {
+        0%,100% { transform: translateY(0); }
+        50% { transform: translateY(-6px); }
+      }
+      .title { color: #e0e0e0; font-size: 18px; font-weight: 600; margin-top: 20px; letter-spacing: 1px; }
+      .subtitle { color: #5a6370; font-size: 11px; margin-top: 6px; }
+      .spinner {
+        margin-top: 28px; width: 24px; height: 24px;
+        border: 2px solid rgba(78,201,176,0.15);
+        border-top-color: #4EC9B0;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+    </head>
+    <body>
+      <div class="logo">A</div>
+      <div class="title">AEGIS Desktop</div>
+      <div class="subtitle">جاري التحميل...</div>
+      <div class="spinner"></div>
+    </body>
+    </html>
+  `;
+
+  splashWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(splashHTML)}`);
+}
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -199,9 +264,13 @@ function createWindow(): void {
     }
   });
 
-  // Show window gracefully
+  // Show window gracefully — close splash
   mainWindow.once('ready-to-show', () => {
     console.log('[Window] Ready to show');
+    if (splashWindow && !splashWindow.isDestroyed()) {
+      splashWindow.close();
+      splashWindow = null;
+    }
     mainWindow?.show();
     mainWindow?.focus();
   });
@@ -270,18 +339,83 @@ function setupIPC(): void {
   ipcMain.handle('gateway:getHistory', () => ({ success: true, data: [] }));
   ipcMain.handle('gateway:status', () => ({ connected: false, connecting: false }))
 
+  // ── Memory: Local Files ──
+  ipcMain.handle('memory:browse', async () => {
+    const { dialog } = require('electron');
+    const result = await dialog.showOpenDialog(mainWindow!, {
+      properties: ['openDirectory'],
+      title: 'Select Memory Folder',
+    });
+    if (result.canceled || !result.filePaths.length) return null;
+    return result.filePaths[0];
+  });
+
+  ipcMain.handle('memory:readLocal', async (_e, dirPath: string) => {
+    const fs = require('fs');
+    const path = require('path');
+    try {
+      const files: { name: string; content: string; modified: string; size: number }[] = [];
+      // Read MEMORY.md if exists
+      const memoryMd = path.join(dirPath, 'MEMORY.md');
+      if (fs.existsSync(memoryMd)) {
+        const stat = fs.statSync(memoryMd);
+        files.push({ name: 'MEMORY.md', content: fs.readFileSync(memoryMd, 'utf-8'), modified: stat.mtime.toISOString(), size: stat.size });
+      }
+      // Read all .md files in directory
+      const entries = fs.readdirSync(dirPath).filter((f: string) => f.endsWith('.md') && f !== 'MEMORY.md').sort().reverse();
+      for (const fname of entries.slice(0, 100)) {
+        const fpath = path.join(dirPath, fname);
+        const stat = fs.statSync(fpath);
+        if (stat.isFile() && stat.size < 500_000) {
+          files.push({ name: fname, content: fs.readFileSync(fpath, 'utf-8'), modified: stat.mtime.toISOString(), size: stat.size });
+        }
+      }
+      // Also check memory/ subfolder
+      const memDir = path.join(dirPath, 'memory');
+      if (fs.existsSync(memDir) && fs.statSync(memDir).isDirectory()) {
+        const memFiles = fs.readdirSync(memDir).filter((f: string) => f.endsWith('.md')).sort().reverse();
+        for (const fname of memFiles.slice(0, 100)) {
+          const fpath = path.join(memDir, fname);
+          const stat = fs.statSync(fpath);
+          if (stat.isFile() && stat.size < 500_000) {
+            files.push({ name: `memory/${fname}`, content: fs.readFileSync(fpath, 'utf-8'), modified: stat.mtime.toISOString(), size: stat.size });
+          }
+        }
+      }
+      return { success: true, files };
+    } catch (e: any) {
+      return { success: false, error: e.message, files: [] };
+    }
+  });
+
   // ── Screenshot ──
   ipcMain.handle('screenshot:capture', async () => {
     try {
+      // Minimize AEGIS for clean screen capture
+      const wasVisible = mainWindow!.isVisible() && !mainWindow!.isMinimized();
+      if (wasVisible) mainWindow!.minimize();
+      await new Promise((r) => setTimeout(r, 400));
+
       const sources = await desktopCapturer.getSources({
         types: ['screen'],
         thumbnailSize: { width: 1920, height: 1080 },
       });
+
+      // Restore AEGIS
+      if (wasVisible) {
+        mainWindow!.restore();
+        mainWindow!.focus();
+      }
+
       if (sources.length > 0) {
         return { success: true, data: sources[0].thumbnail.toDataURL() };
       }
       return { success: false, error: 'No screen found' };
     } catch (err: any) {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.restore();
+        mainWindow.focus();
+      }
       return { success: false, error: err.message };
     }
   });
@@ -310,31 +444,55 @@ function setupIPC(): void {
     try {
       // For AEGIS own window, use native capture
       const ownWindowId = `window:${mainWindow!.getMediaSourceId()}`;
-      if (windowId === ownWindowId || windowId.includes(String(mainWindow!.id))) {
-        // Capture own window via webContents
+      const isOwnWindow = windowId === ownWindowId || windowId.includes(String(mainWindow!.id));
+
+      if (isOwnWindow) {
         const img = await mainWindow!.webContents.capturePage();
         return { success: true, data: img.toDataURL() };
       }
+
+      // For screen sources — capture at full resolution
+      if (windowId.startsWith('screen:')) {
+        const sources = await desktopCapturer.getSources({
+          types: ['screen'],
+          thumbnailSize: { width: 1920, height: 1080 },
+        });
+        const source = sources.find((s) => s.id === windowId);
+        if (source) {
+          return { success: true, data: source.thumbnail.toDataURL() };
+        }
+      }
+
+      // For other windows — get high-res thumbnail
+      // Minimize AEGIS briefly so it doesn't cover the target
+      const wasVisible = mainWindow!.isVisible() && !mainWindow!.isMinimized();
+      if (wasVisible) mainWindow!.minimize();
+      await new Promise((r) => setTimeout(r, 400));
 
       const sources = await desktopCapturer.getSources({
         types: ['window', 'screen'],
         thumbnailSize: { width: 1920, height: 1080 },
       });
       const source = sources.find((s) => s.id === windowId);
-      if (source) {
+
+      // Restore AEGIS
+      if (wasVisible) {
+        mainWindow!.restore();
+        mainWindow!.focus();
+      }
+
+      if (source && !source.thumbnail.isEmpty()) {
         return { success: true, data: source.thumbnail.toDataURL() };
       }
 
-      // Fallback: try capturePage for own window
-      return { success: false, error: 'Window not found' };
+      return { success: false, error: 'Window not found or empty capture' };
     } catch (err: any) {
-      // Last resort: try capturePage
-      try {
-        const img = await mainWindow!.webContents.capturePage();
-        return { success: true, data: img.toDataURL() };
-      } catch {
-        return { success: false, error: err.message };
+      // Restore window on error
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.restore();
+        mainWindow.focus();
       }
+      return { success: false, error: err.message };
     }
   });
 
@@ -461,6 +619,7 @@ if (!gotTheLock) {
 
   app.whenReady().then(() => {
     loadConfig();
+    createSplashWindow();
     createWindow();
     setupIPC();
     tray = createTray(mainWindow!, app);
@@ -484,4 +643,4 @@ app.on('before-quit', () => {
   (app as any).isQuitting = true;
 });
 
-console.log('🛡️ AEGIS Desktop v3.0 started');
+console.log('🛡️ AEGIS Desktop v4.0 started');

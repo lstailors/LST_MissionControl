@@ -4,7 +4,7 @@ import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Copy, Check } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════
-// Code Block — premium syntax highlighting
+// Code Block — Dark theme matching AEGIS design
 // ═══════════════════════════════════════════════════════════
 
 interface CodeBlockProps {
@@ -12,11 +12,12 @@ interface CodeBlockProps {
   code: string;
 }
 
+// Force solid dark background — override any inherited light styles
 const customTheme = {
   ...oneDark,
   'pre[class*="language-"]': {
     ...oneDark['pre[class*="language-"]'],
-    background: 'rgba(10, 10, 20, 0.7)',
+    background: '#0d1117',
     margin: 0,
     padding: '1em',
     borderRadius: 0,
@@ -44,21 +45,23 @@ export function CodeBlock({ language, code }: CodeBlockProps) {
   const displayLang = language || 'text';
 
   return (
-    <div className="my-2 rounded-xl overflow-hidden border border-aegis-border/40 group shadow-card" dir="ltr">
-      {/* Header */}
-      <div className="flex items-center justify-between px-3.5 py-1.5 bg-aegis-elevated/60 border-b border-aegis-border/30">
-        <span className="text-[10px] font-mono font-medium text-aegis-text-dim uppercase tracking-widest">
+    <div className="my-2 rounded-xl overflow-hidden border border-white/[0.08] group" dir="ltr"
+      style={{ background: '#0d1117' }}>
+      {/* Header — solid dark */}
+      <div className="flex items-center justify-between px-3.5 py-1.5 border-b border-white/[0.06]"
+        style={{ background: '#161b22' }}>
+        <span className="text-[10px] font-mono font-medium text-white/40 uppercase tracking-widest">
           {displayLang}
         </span>
         <button
           onClick={handleCopy}
-          className="flex items-center gap-1.5 text-[10px] text-aegis-text-dim hover:text-aegis-text-muted transition-colors"
+          className="flex items-center gap-1.5 text-[10px] text-white/30 hover:text-white/60 transition-colors"
           title="نسخ الكود"
         >
           {copied ? (
             <>
-              <Check size={11} className="text-aegis-success" />
-              <span className="text-aegis-success">تم</span>
+              <Check size={11} className="text-emerald-400" />
+              <span className="text-emerald-400">تم</span>
             </>
           ) : (
             <>
@@ -69,7 +72,7 @@ export function CodeBlock({ language, code }: CodeBlockProps) {
         </button>
       </div>
 
-      {/* Code */}
+      {/* Code — solid dark background */}
       <SyntaxHighlighter
         language={language || 'text'}
         style={customTheme}
@@ -82,6 +85,10 @@ export function CodeBlock({ language, code }: CodeBlockProps) {
           textAlign: 'right',
         }}
         wrapLongLines
+        customStyle={{
+          background: '#0d1117',
+          margin: 0,
+        }}
       >
         {code}
       </SyntaxHighlighter>

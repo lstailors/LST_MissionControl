@@ -14,7 +14,7 @@ import clsx from 'clsx';
 
 export function ChatView() {
   const { t } = useTranslation();
-  const { messages, isTyping, connected, connecting, connectionError, isLoadingHistory, setMessages, setIsLoadingHistory } = useChatStore();
+  const { messages, isTyping, connected, connecting, connectionError, isLoadingHistory, setMessages, setIsLoadingHistory, activeSessionKey, cacheMessagesForSession, getCachedMessages } = useChatStore();
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const [showScrollDown, setShowScrollDown] = useState(false);
@@ -69,16 +69,29 @@ export function ChatView() {
   };
 
   const loadHistory = useCallback(async () => {
+    // Check cache first
+    const cached = getCachedMessages(activeSessionKey);
+    if (cached && cached.length > 0) {
+      setMessages(cached);
+      return;
+    }
+
     setIsLoadingHistory(true);
     try {
-      const result = await gateway.getHistory('agent:main:main', 200);
+      const result = await gateway.getHistory(activeSessionKey, 200);
       const rawMessages = Array.isArray(result?.messages) ? result.messages : [];
       const filtered = rawMessages
         .map((msg: any) => {
           const role = typeof msg.role === 'string' ? msg.role : 'unknown';
           const content = extractText(msg.content);
           if (!content) return null;
-          if (role === 'system' || role === 'toolResult' || role === 'tool') return null;
+          if (role === 'system') {
+            if (/compact/i.test(content)) {
+              return { id: msg.id || `compaction-${Math.random().toString(36).slice(2)}`, role: 'compaction' as any, content: '', timestamp: msg.timestamp || msg.createdAt || new Date().toISOString() };
+            }
+            return null;
+          }
+          if (role === 'toolResult' || role === 'tool') return null;
           if (role !== 'user' && role !== 'assistant') return null;
           if (Array.isArray(msg.content)) {
             const hasOnlyTools = msg.content.every((b: any) =>
@@ -98,12 +111,13 @@ export function ChatView() {
         })
         .filter(Boolean) as any[];
       setMessages(filtered);
+      cacheMessagesForSession(activeSessionKey, filtered);
     } catch (err) {
       console.error('[ChatView] History load failed:', err);
     } finally {
       setIsLoadingHistory(false);
     }
-  }, [setMessages, setIsLoadingHistory]);
+  }, [setMessages, setIsLoadingHistory, activeSessionKey, getCachedMessages, cacheMessagesForSession]);
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const handleRefresh = useCallback(async () => {
@@ -113,9 +127,10 @@ export function ChatView() {
     finally { setTimeout(() => setIsRefreshing(false), 500); }
   }, [isRefreshing, isLoadingHistory, loadHistory]);
 
+  // Load history on connect or session change
   useEffect(() => {
-    if (connected && messages.length === 0 && !isLoadingHistory) loadHistory();
-  }, [connected]);
+    if (connected && !isLoadingHistory) loadHistory();
+  }, [connected, activeSessionKey]);
 
   useEffect(() => {
     const handler = () => handleRefresh();
@@ -123,19 +138,19 @@ export function ChatView() {
     return () => window.removeEventListener('aegis:refresh', handler);
   }, [handleRefresh]);
 
-  const handleResend = useCallback((content: string) => { gateway.sendMessage(content); }, []);
+  const handleResend = useCallback((content: string) => { gateway.sendMessage(content, undefined, activeSessionKey); }, [activeSessionKey]);
 
   return (
     <div className="flex flex-col flex-1 min-h-0 bg-aegis-bg">
       {/* Chat Header */}
-      <div className="shrink-0 flex items-center justify-between px-5 py-2 border-b border-aegis-border/20 bg-aegis-bg/80 backdrop-blur-sm">
+      <div className="shrink-0 flex items-center justify-between px-5 py-2 border-b border-white/[0.04] bg-[rgba(13,17,23,0.6)] backdrop-blur-xl">
         <div className="flex items-center gap-2">
-          <span className="text-[11px] text-aegis-text-dim font-mono">
+          <span className="text-[11px] text-white/30 font-mono">
             {messages.length > 0 ? t('chat.messageCount', { count: messages.length }) : ''}
           </span>
         </div>
         <button onClick={handleRefresh} disabled={isRefreshing || isLoadingHistory || !connected}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] text-aegis-text-dim hover:text-aegis-text-muted hover:bg-white/[0.03] transition-colors disabled:opacity-30"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] text-white/25 hover:text-white/45 hover:bg-white/[0.05] transition-colors disabled:opacity-30"
           title={t('chat.refresh')}>
           <RefreshCw size={13} className={isRefreshing ? 'animate-spin' : ''} />
           <span>{t('chat.refresh')}</span>
@@ -179,7 +194,7 @@ export function ChatView() {
         ) : messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-8">
             <div className="relative mb-8">
-              <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-aegis-primary/15 to-aegis-accent/10 flex items-center justify-center border border-aegis-primary/10 shadow-glow-md animate-glow-pulse">
+              <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-aegis-primary/15 to-aegis-accent/10 flex items-center justify-center border border-white/[0.08] shadow-[0_0_32px_rgba(78,201,176,0.15)] animate-glow-pulse">
                 <Shield size={36} className="text-aegis-primary" />
               </div>
               <div className="absolute inset-0 w-20 h-20 rounded-3xl border border-aegis-primary/5 animate-pulse-ring" />
@@ -193,7 +208,15 @@ export function ChatView() {
         ) : (
           <div className="space-y-0.5">
             {messages.map((msg) => (
-              <MessageBubble key={msg.id} message={msg} onResend={msg.role === 'user' ? handleResend : undefined} />
+              msg.role === 'compaction' ? (
+                <div key={msg.id} className="flex items-center gap-3 py-4 px-4">
+                  <div className="flex-1 border-t border-dashed border-amber-500/20" />
+                  <span className="text-[10px] text-amber-500/40 font-semibold uppercase tracking-wider shrink-0">⚡ Context Compacted</span>
+                  <div className="flex-1 border-t border-dashed border-amber-500/20" />
+                </div>
+              ) : (
+                <MessageBubble key={msg.id} message={msg} onResend={msg.role === 'user' ? handleResend : undefined} />
+              )
             ))}
           </div>
         )}

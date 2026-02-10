@@ -27,12 +27,22 @@ export function MessageInput() {
   const { t } = useTranslation();
   const { language } = useSettingsStore();
   const dir = getDirection(language);
-  const [text, setText] = useState('');
+  const { isSending, setIsSending, connected, addMessage, setIsTyping, isTyping, activeSessionKey, drafts, setDraft } = useChatStore();
+  const [text, setText] = useState(() => drafts[activeSessionKey] || '');
   const [files, setFiles] = useState<PendingFile[]>([]);
   const [screenshotOpen, setScreenshotOpen] = useState(false);
   const [voiceMode, setVoiceMode] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { isSending, setIsSending, connected, addMessage, setIsTyping, isTyping } = useChatStore();
+
+  // Sync draft when switching sessions
+  useEffect(() => {
+    setText(drafts[activeSessionKey] || '');
+  }, [activeSessionKey]);
+
+  // Save draft on text change
+  useEffect(() => {
+    setDraft(activeSessionKey, text);
+  }, [text, activeSessionKey]);
 
   useEffect(() => {
     const el = textareaRef.current;
@@ -71,7 +81,7 @@ export function MessageInput() {
 
     try {
       const messageText = trimmed || (attachments.length > 0 ? `📎 ${files.map((f) => f.name).join(', ')}` : '');
-      await gateway.sendMessage(messageText, attachments.length > 0 ? attachments : undefined);
+      await gateway.sendMessage(messageText, attachments.length > 0 ? attachments : undefined, activeSessionKey);
     } catch (err) {
       console.error('[Send] Error:', err);
     } finally {
@@ -188,7 +198,7 @@ export function MessageInput() {
   const removeFile = (index: number) => setFiles((prev) => prev.filter((_, i) => i !== index));
 
   return (
-    <div className="shrink-0 border-t border-aegis-border/20 bg-aegis-bg/95 backdrop-blur-md">
+    <div className="shrink-0 border-t border-white/[0.04] bg-[rgba(13,17,23,0.5)] backdrop-blur-xl">
       {/* File Previews */}
       {files.length > 0 && (
         <div className="flex gap-2 px-4 pt-3 overflow-x-auto scrollbar-hidden">
@@ -219,8 +229,16 @@ export function MessageInput() {
         <VoiceRecorder onSendVoice={handleVoiceSend} onCancel={() => setVoiceMode(false)} disabled={!connected} />
       ) : (
         <div className="flex items-end gap-2 p-3" dir={dir}>
-          {/* Action Buttons */}
-          <div className="flex items-center gap-0.5 pb-1">
+          {/* Input Wrapper (matches mockup) */}
+          <div className={clsx(
+            'flex items-center gap-2 px-3 py-2 rounded-2xl flex-1',
+            'bg-aegis-surface border border-white/[0.06]',
+            'transition-all duration-200',
+            'focus-within:border-aegis-primary/30',
+            'focus-within:shadow-[0_0_0_3px_rgba(78,201,176,0.06),0_0_16px_rgba(78,201,176,0.08)]',
+            !connected && 'opacity-40'
+          )} onDrop={handleDrop} onDragOver={(e) => e.preventDefault()}>
+            {/* Action Buttons */}
             <EmojiPicker
               onSelect={(emoji) => { setText((prev) => prev + emoji); textareaRef.current?.focus(); }}
               disabled={!connected}
@@ -231,56 +249,55 @@ export function MessageInput() {
               { icon: Mic, action: () => setVoiceMode(true), title: t('input.voiceRecord'), disabled: !connected },
             ].map(({ icon: Icon, action, title, disabled }) => (
               <button key={title} onClick={action} disabled={disabled}
-                className="p-2 rounded-xl hover:bg-white/[0.04] text-aegis-text-dim hover:text-aegis-text-muted transition-colors disabled:opacity-30"
+                className={clsx(
+                  'w-[34px] h-[34px] rounded-lg flex items-center justify-center flex-shrink-0',
+                  'bg-white/[0.03] border-none',
+                  'text-white/25 hover:text-white/45 hover:bg-white/[0.07]',
+                  'transition-colors disabled:opacity-30'
+                )}
                 title={title}>
-                <Icon size={17} />
+                <Icon size={16} />
               </button>
             ))}
-          </div>
 
-          {/* Text Input */}
-          <div className="flex-1 relative" onDrop={handleDrop} onDragOver={(e) => e.preventDefault()}>
+            {/* Text Input */}
             <textarea ref={textareaRef} value={text} onChange={(e) => setText(e.target.value)}
               onKeyDown={handleKeyDown} onPaste={handlePaste}
               placeholder={connected ? t('input.placeholder') : t('input.placeholderDisconnected')}
               disabled={!connected}
               className={clsx(
-                'w-full resize-none rounded-2xl px-4 py-2.5 text-[14px]',
-                'bg-aegis-surface/60 border border-aegis-border/30',
-                'text-aegis-text placeholder:text-aegis-text-dim/50',
-                'focus:outline-none focus:border-aegis-primary/30 focus:bg-aegis-surface/80',
-                'focus:shadow-[0_0_0_3px_rgba(139,124,248,0.06)]',
-                'transition-all duration-200',
-                'max-h-[180px] scrollbar-hidden',
-                !connected && 'opacity-40 cursor-not-allowed'
+                'flex-1 resize-none bg-transparent border-none text-[14px]',
+                'text-aegis-text placeholder:text-white/25',
+                'focus:outline-none py-1.5 px-1',
+                'max-h-[180px] scrollbar-hidden'
               )}
               dir="auto" rows={1} />
-          </div>
 
-          {/* Send / Stop Button */}
-          {isTyping || isSending ? (
-            <button onClick={async () => {
-              try { await gateway.abortChat(); setIsTyping(false); setIsSending(false); }
-              catch (err) { console.error('[Abort] Error:', err); }
-            }}
-              className="p-2.5 rounded-2xl transition-all duration-200 mb-0.5 bg-aegis-danger/80 hover:bg-aegis-danger text-white shadow-glow-sm"
-              title={t('input.stop')}>
-              <Square size={17} fill="currentColor" />
-            </button>
-          ) : (
-            <button onClick={handleSend}
-              disabled={(!text.trim() && files.length === 0) || !connected}
-              className={clsx(
-                'p-2.5 rounded-2xl transition-all duration-200 mb-0.5',
-                text.trim() || files.length > 0
-                  ? 'bg-aegis-primary hover:bg-aegis-primary-hover text-white shadow-glow-sm hover:shadow-glow-md'
-                  : 'bg-aegis-elevated/50 text-aegis-text-dim',
-                'disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none'
-              )}
-              title={t('input.send')}>
-              <Send size={17} className={dir === 'rtl' ? 'rotate-180' : ''} />
-            </button>
-          )}
+            {/* Send / Stop Button */}
+            {isTyping || isSending ? (
+              <button onClick={async () => {
+                try { await gateway.abortChat(); setIsTyping(false); setIsSending(false); }
+                catch (err) { console.error('[Abort] Error:', err); }
+              }}
+                className="w-[34px] h-[34px] rounded-lg flex items-center justify-center flex-shrink-0 bg-aegis-danger/80 hover:bg-aegis-danger text-white transition-all"
+                title={t('input.stop')}>
+                <Square size={16} fill="currentColor" />
+              </button>
+            ) : (
+              <button onClick={handleSend}
+                disabled={(!text.trim() && files.length === 0) || !connected}
+                className={clsx(
+                  'w-[34px] h-[34px] rounded-lg flex items-center justify-center flex-shrink-0 transition-all',
+                  text.trim() || files.length > 0
+                    ? 'bg-gradient-to-br from-[#4EC9B0] to-[#2CA78E] text-[#0c1015] shadow-[0_2px_8px_rgba(78,201,176,0.3)] hover:shadow-[0_4px_16px_rgba(78,201,176,0.4)] hover:-translate-y-px'
+                    : 'bg-white/[0.04] text-white/20',
+                  'disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none'
+                )}
+                title={t('input.send')}>
+                <Send size={16} className={dir === 'rtl' ? 'rotate-180' : ''} />
+              </button>
+            )}
+          </div>
         </div>
       )}
 

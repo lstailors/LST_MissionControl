@@ -11,6 +11,15 @@ interface SettingsState {
   sidebarWidth: number;
   settingsOpen: boolean;
   language: 'ar' | 'en';
+  notificationsEnabled: boolean;
+  soundEnabled: boolean;
+  dndMode: boolean;
+  budgetLimit: number;
+  commandPaletteOpen: boolean;
+  memoryExplorerEnabled: boolean;
+  memoryMode: 'api' | 'local';
+  memoryApiUrl: string;
+  memoryLocalPath: string;
 
   setTheme: (theme: 'dark' | 'light' | 'system') => void;
   setFontSize: (size: number) => void;
@@ -19,6 +28,15 @@ interface SettingsState {
   setSidebarWidth: (width: number) => void;
   setSettingsOpen: (open: boolean) => void;
   setLanguage: (lang: 'ar' | 'en') => void;
+  setNotificationsEnabled: (enabled: boolean) => void;
+  setSoundEnabled: (enabled: boolean) => void;
+  setDndMode: (dnd: boolean) => void;
+  setBudgetLimit: (n: number) => void;
+  setCommandPaletteOpen: (open: boolean) => void;
+  setMemoryExplorerEnabled: (enabled: boolean) => void;
+  setMemoryMode: (mode: 'api' | 'local') => void;
+  setMemoryApiUrl: (url: string) => void;
+  setMemoryLocalPath: (path: string) => void;
 }
 
 const savedLang = (localStorage.getItem('aegis-language') || 'ar') as 'ar' | 'en';
@@ -30,6 +48,15 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   sidebarWidth: 280,
   settingsOpen: false,
   language: savedLang,
+  notificationsEnabled: localStorage.getItem('aegis-notifications') !== 'false',
+  soundEnabled: localStorage.getItem('aegis-sound') !== 'false',
+  dndMode: false,
+  budgetLimit: parseFloat(localStorage.getItem('aegis-budget-limit') || '0') || 0,
+  commandPaletteOpen: false,
+  memoryExplorerEnabled: localStorage.getItem('aegis-memory-explorer') === 'true',
+  memoryMode: (localStorage.getItem('aegis-memory-mode') || 'local') as 'api' | 'local',
+  memoryApiUrl: localStorage.getItem('aegis-memory-api-url') || 'http://localhost:3040',
+  memoryLocalPath: localStorage.getItem('aegis-memory-local-path') || '',
 
   setTheme: (theme) => set({ theme }),
   setFontSize: (size) => set({ fontSize: size }),
@@ -38,4 +65,13 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   setSidebarWidth: (width) => set({ sidebarWidth: width }),
   setSettingsOpen: (open) => set({ settingsOpen: open }),
   setLanguage: (lang) => set({ language: lang }),
+  setNotificationsEnabled: (enabled) => { localStorage.setItem('aegis-notifications', String(enabled)); set({ notificationsEnabled: enabled }); },
+  setSoundEnabled: (enabled) => { localStorage.setItem('aegis-sound', String(enabled)); set({ soundEnabled: enabled }); },
+  setDndMode: (dnd) => set({ dndMode: dnd }),
+  setBudgetLimit: (n) => { localStorage.setItem('aegis-budget-limit', String(n)); set({ budgetLimit: n }); },
+  setCommandPaletteOpen: (open) => set({ commandPaletteOpen: open }),
+  setMemoryExplorerEnabled: (enabled) => { localStorage.setItem('aegis-memory-explorer', String(enabled)); set({ memoryExplorerEnabled: enabled }); },
+  setMemoryMode: (mode) => { localStorage.setItem('aegis-memory-mode', mode); set({ memoryMode: mode }); },
+  setMemoryApiUrl: (url) => { localStorage.setItem('aegis-memory-api-url', url); set({ memoryApiUrl: url }); },
+  setMemoryLocalPath: (path) => { localStorage.setItem('aegis-memory-local-path', path); set({ memoryLocalPath: path }); },
 }));

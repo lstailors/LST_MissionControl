@@ -1,17 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Minus, Square, X, Copy } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useChatStore } from '@/stores/chatStore';
 import clsx from 'clsx';
 
 // ═══════════════════════════════════════════════════════════
-// Title Bar — premium frameless window controls
+// Title Bar — Glass Pills window controls + AEGIS DESKTOP branding
 // ═══════════════════════════════════════════════════════════
 
 export function TitleBar() {
   const { t } = useTranslation();
   const [isMaximized, setIsMaximized] = useState(false);
-  const { connected, connecting } = useChatStore();
+  const { connected, connecting, tokenUsage } = useChatStore();
 
   useEffect(() => {
     window.aegis?.window.isMaximized().then(setIsMaximized);
@@ -24,44 +23,83 @@ export function TitleBar() {
   };
   const handleClose = () => window.aegis?.window.close();
 
-  return (
-    <div className="drag-region h-10 flex items-center justify-between bg-aegis-bg/95 backdrop-blur-md border-b border-aegis-border/40 select-none shrink-0 relative">
-      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-aegis-primary/10 to-transparent" />
+  const usedTokens = tokenUsage?.contextTokens || 0;
+  const maxTokens = tokenUsage?.maxTokens || 200000;
+  const usedK = Math.round(usedTokens / 1000);
+  const maxK = Math.round(maxTokens / 1000);
 
-      {/* Logo + Title + Status */}
-      <div className="flex items-center gap-2.5 px-4">
-        <div className="relative">
-          <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-aegis-primary to-aegis-accent flex items-center justify-center shadow-glow-sm">
-            <span className="text-[10px] font-bold text-white">A</span>
-          </div>
-          <div className={clsx(
-            'absolute -bottom-0.5 -left-0.5 w-2 h-2 rounded-full border border-aegis-bg',
-            connected ? 'bg-aegis-success' : connecting ? 'bg-aegis-warning animate-pulse-soft' : 'bg-aegis-danger'
-          )} />
+  return (
+    <div className="drag-region h-[38px] flex items-center justify-between chrome-bg border-b border-aegis-border select-none shrink-0 relative z-10">
+
+      {/* ── Left: Glass Pill Controls + Brand ── */}
+      <div className="no-drag flex items-center gap-3 px-4">
+        {/* Glass pill buttons */}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={handleClose}
+            className="w-[32px] h-[22px] rounded-[11px] flex items-center justify-center text-[12px] leading-none transition-all duration-[250ms]"
+            style={{
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              color: 'rgba(255,255,255,0.3)',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,80,80,0.2)'; e.currentTarget.style.borderColor = 'rgba(255,80,80,0.3)'; e.currentTarget.style.color = '#ff5050'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.3)'; }}
+            title={t('titlebar.close')}
+          >✕</button>
+          <button
+            onClick={handleMaximize}
+            className="w-[32px] h-[22px] rounded-[11px] flex items-center justify-center text-[10px] leading-none transition-all duration-[250ms]"
+            style={{
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              color: 'rgba(255,255,255,0.3)',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(78,201,176,0.15)'; e.currentTarget.style.borderColor = 'rgba(78,201,176,0.3)'; e.currentTarget.style.color = '#4EC9B0'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.3)'; }}
+            title={isMaximized ? t('titlebar.restore') : t('titlebar.maximize')}
+          >□</button>
+          <button
+            onClick={handleMinimize}
+            className="w-[32px] h-[22px] rounded-[11px] flex items-center justify-center text-[12px] leading-none transition-all duration-[250ms]"
+            style={{
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              color: 'rgba(255,255,255,0.3)',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.3)'; }}
+            title={t('titlebar.minimize')}
+          >─</button>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-[13px] font-semibold text-aegis-text tracking-tight">{t('app.name')}</span>
-          <span className="text-[10px] text-aegis-text-dim font-mono">{t('app.version')}</span>
+
+        {/* Brand */}
+        <div className="flex items-center gap-2 mr-2">
+          <span className="text-[12px] font-bold text-white/50 tracking-[2px]">
+            AEGIS
+          </span>
+          <span className="text-[10px] text-white/15 tracking-[1px]">
+            DESKTOP
+          </span>
         </div>
       </div>
 
-      {/* Window controls — always on the right for Windows */}
-      <div className="no-drag flex items-center">
-        <button onClick={handleMinimize}
-          className="h-10 w-12 flex items-center justify-center hover:bg-white/[0.04] transition-colors"
-          title={t('titlebar.minimize')}>
-          <Minus size={14} className="text-aegis-text-dim" />
-        </button>
-        <button onClick={handleMaximize}
-          className="h-10 w-12 flex items-center justify-center hover:bg-white/[0.04] transition-colors"
-          title={isMaximized ? t('titlebar.restore') : t('titlebar.maximize')}>
-          {isMaximized ? <Copy size={11} className="text-aegis-text-dim" /> : <Square size={11} className="text-aegis-text-dim" />}
-        </button>
-        <button onClick={handleClose}
-          className="h-10 w-12 flex items-center justify-center hover:bg-aegis-danger/80 transition-colors group"
-          title={t('titlebar.close')}>
-          <X size={14} className="text-aegis-text-dim group-hover:text-white" />
-        </button>
+      {/* ── Right: Model + Tokens + Status ── */}
+      <div className="flex items-center gap-4 px-4 text-[11px] text-white/25 font-mono">
+        <span>Opus 4.6</span>
+        <span className="text-white/10">·</span>
+        <span>{usedK}K / {maxK}K</span>
+        <span className="text-white/10">·</span>
+        <span className={clsx(
+          'flex items-center gap-[6px]',
+          connected ? 'text-aegis-success' : connecting ? 'text-aegis-warning' : 'text-aegis-text-dim'
+        )}>
+          <span className={clsx(
+            'w-[6px] h-[6px] rounded-full',
+            connected ? 'bg-aegis-success connected-glow' : connecting ? 'bg-aegis-warning animate-pulse' : 'bg-aegis-text-dim'
+          )} />
+          {connected ? 'Connected' : connecting ? 'Connecting...' : 'Disconnected'}
+        </span>
       </div>
     </div>
   );

@@ -1,215 +1,166 @@
-# 🛡️ AEGIS Desktop
+# 🛡️ AEGIS Desktop v4.0 — Mission Control
 
-**Advanced Executive General Intelligence System — Desktop Client**
+> **Advanced Executive General Intelligence System** — Your AI Command Center
 
-A premium native Windows desktop client for [OpenClaw](https://github.com/openclaw/openclaw) Gateway, built with Electron + React + TypeScript.
+![Electron](https://img.shields.io/badge/Electron-34-47848F?logo=electron&logoColor=white)
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)
+![OpenClaw](https://img.shields.io/badge/OpenClaw-2026.2.9-blueviolet)
 
-![Version](https://img.shields.io/badge/version-3.1.0-blue)
-![Platform](https://img.shields.io/badge/platform-Windows-0078D6)
-![Electron](https://img.shields.io/badge/Electron-34-47848F)
-![React](https://img.shields.io/badge/React-18-61DAFB)
+A premium desktop client for [OpenClaw](https://github.com/openclaw/openclaw) — transforming your AI gateway into a full mission control center with 8 dedicated pages, real-time monitoring, and multi-agent management.
 
 ---
 
 ## 📸 Screenshots
 
-### Arabic Interface (RTL)
-![Arabic Chat](screenshots/chat-arabic.png)
+| Dashboard | Chat |
+|:---------:|:----:|
+| ![Dashboard](screenshots/dashboard.png) | ![Chat](screenshots/chat-arabic.png) |
 
-### English Interface (LTR)
-![English Chat](screenshots/chat-english.png)
+| Agent Hub | Cron Monitor |
+|:---------:|:------------:|
+| ![Agent Hub](screenshots/agent-hub.png) | ![Cron Monitor](screenshots/cron-monitor.png) |
 
-### Settings (Arabic)
-![Settings Arabic](screenshots/settings-arabic.png)
+| Workshop (Kanban) | Cost Tracker |
+|:-----------------:|:------------:|
+| ![Workshop](screenshots/workshop.png) | ![Cost Tracker](screenshots/cost-tracker.png) |
 
-### Settings (English)
-![Settings English](screenshots/settings-english.png)
+| Memory Explorer | Settings |
+|:---------------:|:--------:|
+| ![Memory Explorer](screenshots/memory-explorer.png) | ![Settings](screenshots/settings-arabic.png) |
 
 ---
 
 ## ✨ Features
 
+### 🏠 Dashboard — Mission Control
+- At-a-glance overview: connection status, token usage, active sessions, recent activity
+- Quick Actions — trigger heartbeat, check email, view calendar
+- Mini info cards in the sidebar — always visible
+
 ### 💬 Chat
-- Real-time messaging with OpenClaw Gateway via WebSocket
-- Markdown rendering with syntax-highlighted code blocks
-- Streaming responses with typing indicator
-- Auto-load chat history on connect
-- Message copy & resend
+- **Multi-tab sessions** — open multiple chats with `Ctrl+Tab` switching
+- **Streaming responses** with real-time markdown rendering
+- **Image support** — paste, drag & drop, or upload images
+- **Emoji Picker** with search and categories
+- **Voice playback** — TTS audio via Edge TTS (Arabic Fusha)
+- **Floating Chat Widget** (Intercom-style) — available on every page
+- **Compaction Divider** — visual separator when context is compressed
+- **Message Queue** — messages buffer during disconnect and auto-send on reconnect
 
-### 🎨 Premium Dark UI
-- Glass-morphism design with backdrop blur
-- Custom color system with glow effects
-- Smooth animations and transitions
-- Responsive layout
+### 🤖 Agent Hub
+- **Main Agent** hero card with live status
+- **Registered Agents** grid — view all configured agents
+- **Agent CRUD** — create, edit, and delete agents directly from the UI
+- **Active Workers** — monitor isolated sessions (cron jobs, sub-agents)
+- **Smart Classification** — 10 worker types with auto-detected icons and colors
 
-### 📊 Token Usage Dashboard
-- Inline sidebar dashboard — no modal needed
-- Circular progress ring with percentage
-- Per-session token breakdown
-- Real-time updates after each response
+### ⏰ Cron Monitor
+- **Job Dashboard** — view all scheduled jobs with status, schedule, and controls
+- **Run / Pause / Resume** — manage jobs with one click
+- **Run History** — expandable view showing last 10 runs per job with status and duration
+- **Human-readable schedules** — "Every 6 hours", "Daily at 9 PM Riyadh"
+- **Templates** — 4 ready-made templates (Morning Briefing, Weekly Digest, Check-In, System Health)
 
-### 🌐 Multi-Language (i18n)
-- **Arabic** (RTL) — full right-to-left support
-- **English** (LTR) — full left-to-right support
-- Language selection during installation (NSIS)
-- Switch anytime from Settings
-- All UI elements adapt direction automatically
+### 📋 Workshop (Kanban)
+- **Drag & Drop** task board with customizable columns
+- **Task cards** with priority, labels, and descriptions
+- Demo tasks included to get started
 
-### 🎤 Voice
-- Voice recording with audio level visualizer
-- Voice message sending via shared folder
-- TTS audio playback (Edge TTS integration)
-- Custom AudioPlayer component
+### 💰 Cost Tracker
+- **Usage charts** with daily/weekly/monthly views (Recharts)
+- **Budget Alerts** — get notified when approaching limits
+- **Export** — CSV download or copy to clipboard
 
-### 📎 Attachments
-- Image upload via file picker
-- Screenshot capture (full screen + per-window)
-- Clipboard paste (Ctrl+V)
-- Drag & drop images
-- Image preview with size indicator
+### 🧠 Memory Explorer
+- **Browse memories** with auto-loading and search
+- **Color-coded categories** — visual bars by memory type
+- **CRUD operations** — create, view, and manage memories
 
-### 😊 Emoji Picker
-- Full emoji picker with categories
-- Search and frequently used
-- Native emoji rendering
-- Adapts to selected language
+### 🔔 Notification Center
+- **Bell badge** with unread count
+- **Notification history** panel
+- **Chime sound** + Do Not Disturb mode
 
-### ⚙️ Settings
-- Gateway URL & token configuration
-- Connection testing
-- Shared folder path
-- Global hotkey (Alt+Space)
-- Image compression toggle
-- Auto-start with Windows
+### ⌨️ Keyboard Shortcuts
 
-### 🖥️ Desktop Features
-- Frameless window with custom title bar
-- System tray with minimize-to-tray
-- Global hotkey to show/hide
-- Right-click context menu (Cut/Copy/Paste)
-- NSIS installer with language selection
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl+K` | Command Palette — search & execute |
+| `Ctrl+1` – `Ctrl+8` | Navigate to page |
+| `Ctrl+,` | Open Settings |
+| `Ctrl+Tab` | Switch between chat tabs |
+| `Ctrl+W` | Close current tab |
+| `Ctrl+N` | Go to Chat |
+| `Ctrl+R` | Refresh |
+| `Alt+Space` | Show/hide window (global) |
 
----
+### 🌐 Multi-Language
+- **Arabic (العربية)** — full RTL layout, sidebar on the right
+- **English** — full LTR layout, sidebar on the left
+- Switch anytime from Settings or during installation
 
-## 🛠️ Tech Stack
+### 🎨 Design
+- **Liquid Glass Dark** theme with Electric Blue accents
+- **Glass Pill** window controls (custom title bar)
+- **Framer Motion** animations throughout
+- **Splash Screen** on startup
 
-| Technology | Version | Purpose |
-|-----------|---------|---------|
-| Electron | 34 | Desktop framework |
-| React | 18 | UI framework |
-| TypeScript | 5.x | Type safety |
-| Vite | 6 | Build tool |
-| TailwindCSS | 3.x | Styling |
-| Zustand | 5 | State management |
-| react-i18next | - | Internationalization |
-| react-markdown | - | Markdown rendering |
-| emoji-mart | - | Emoji picker |
-| lucide-react | - | Icons |
+### 🔌 Connection
+- **Auto-reconnect** with exponential backoff (up to 10 attempts)
+- **Activity-based heartbeat** — detects dead connections within 45 seconds
+- **Offline message queue** — buffers up to 50 messages, auto-flushes on reconnect
+- **Token usage bar** in sidebar — always visible
 
 ---
 
 ## 📦 Installation
 
-### From Installer
-Download the latest `AEGIS-Desktop-Setup-x.x.x.exe` from [Releases](https://github.com/rshodoskar-star/openclaw-desktop/releases).
+1. Download `AEGIS-Desktop-Setup-4.0.0.exe` from [Releases](../../releases)
+2. Run the installer — choose your language (Arabic / English)
+3. Make sure [OpenClaw](https://github.com/openclaw/openclaw) Gateway is running
 
-### From Source
+### Portable
 
-```bash
-# Clone
-git clone https://github.com/rshodoskar-star/openclaw-desktop.git
-cd openclaw-desktop
+Download `AEGIS-Desktop-4.0.0.exe` — runs without installation.
 
-# Install dependencies
-npm install
-
-# Development
-npm run dev
-
-# Build
-npm run build
-
-# Package installer
-npm run package
-```
-
----
-
-## ⚙️ Configuration
-
-On first launch, configure in Settings (⚙️):
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| Gateway URL | `ws://127.0.0.1:18789` | OpenClaw Gateway WebSocket URL |
-| Gateway Token | — | Authentication token |
-| Shared Folder | `D:\clawdbot-shared` | Shared folder for voice files |
-| Global Hotkey | `Alt+Space` | Show/hide window |
-
----
-
-## 🏗️ Project Structure
-
-```
-aegis-desktop/
-├── electron/           # Electron main process
-│   ├── main.ts        # Main entry, IPC handlers
-│   ├── preload.ts     # Preload bridge (aegis API)
-│   ├── gateway.ts     # Gateway WebSocket client
-│   └── tray.ts        # System tray
-├── src/               # React renderer
-│   ├── components/    # UI components
-│   │   ├── Chat/      # ChatView, MessageBubble, Input...
-│   │   ├── Sidebar/   # Sidebar with token dashboard
-│   │   ├── Settings/  # Settings modal
-│   │   └── TitleBar   # Custom title bar
-│   ├── locales/       # i18n translations (ar, en)
-│   ├── services/      # Gateway service
-│   ├── stores/        # Zustand stores
-│   ├── styles/        # TailwindCSS
-│   └── i18n.ts        # i18n configuration
-├── installer/         # NSIS installer scripts
-├── assets/            # Icons and images
-└── package.json
-```
-
----
-
-## 📋 Requirements
+### Requirements
 
 - Windows 10/11
-- [OpenClaw](https://github.com/openclaw/openclaw) Gateway running locally or remotely
-- Node.js 18+ (for development)
+- [OpenClaw](https://github.com/openclaw/openclaw) v2026.2.9 or later
+- OpenClaw Gateway running locally or remotely
 
 ---
 
-## 📝 Changelog
+## 🛠️ Development
 
-### v3.1.0 (2026-02-08)
-- 🌐 Multi-language support (Arabic + English) with RTL/LTR
-- 😊 Emoji picker
-- 📊 Inline token usage dashboard in sidebar
-- 🎤 Voice recording & TTS playback
-- 🎨 Premium dark theme with lighter palette
-- 📷 Screenshot capture (full screen + per-window)
-- 🖱️ Right-click context menu
-- 🔄 Auto-load chat history on connect
-- 📦 NSIS installer with language selection
-
-### v2.0.0 (2026-01-31)
-- Gateway WebSocket direct connection
-- Screenshot & image sending
-- Frameless window with system tray
-
-### v1.0.0 (2026-01-31)
-- Initial release — WebCatalog wrapper
+```bash
+npm install
+npm run dev            # Vite + Electron (hot reload)
+npm run dev:web        # Vite only (browser, no Electron)
+npm run build          # Production build
+npm run package        # NSIS Installer
+npm run package:portable  # Portable exe
+```
 
 ---
 
-## 📄 License
+## 🔧 Tech Stack
 
-MIT
+| Layer | Technology |
+|-------|-----------|
+| Framework | Electron 34 |
+| UI | React 18 + TypeScript 5.7 |
+| Build | Vite 6 |
+| Styling | TailwindCSS + Framer Motion |
+| State | Zustand |
+| Charts | Recharts |
+| i18n | react-i18next |
+| Routing | react-router-dom |
+| Icons | Lucide React |
 
 ---
 
-**Built with ❤️ by [Rashed](https://github.com/rshodoskar-star)**
+## 👤 Author
+
+**Rashed** — © 2026

@@ -38,9 +38,10 @@ export function ScreenshotPicker({ open, onClose, onCapture }: ScreenshotPickerP
 
   const loadWindows = async () => {
     try {
-      const sources = await window.aegis?.screenshot.getWindows();
+      // Use preload getSources (desktopCapturer) for thumbnails
+      const sources = await window.aegis?.screenshot.getSources?.()
+        || await window.aegis?.screenshot.getWindows();
       if (Array.isArray(sources)) {
-        // Filter out empty/tiny windows and AEGIS itself
         const filtered = sources.filter(
           (w: WindowSource) => w.name && w.thumbnail
         );
@@ -53,19 +54,42 @@ export function ScreenshotPicker({ open, onClose, onCapture }: ScreenshotPickerP
     }
   };
 
+  // Capture using MediaStream API (real screenshot)
+  const captureSource = async (sourceId: string) => {
+    try {
+      // Use the real Screen Capture API via preload
+      const dataUrl = await window.aegis?.screenshot.captureSourceStream?.(sourceId);
+      if (dataUrl) {
+        return dataUrl;
+      }
+      // Fallback to main process
+      const result = await window.aegis?.screenshot.captureWindow(sourceId);
+      return result?.success ? result.data : null;
+    } catch {
+      return null;
+    }
+  };
+
   // Capture full screen
   const captureScreen = async () => {
     setCapturing('screen');
     try {
-      // Minimize AEGIS window briefly for clean capture
-      await window.aegis?.window.minimize();
-      // Small delay for window to minimize
-      await new Promise((r) => setTimeout(r, 300));
+      // Find the screen source
+      const screenSource = windows.find((w) => w.id.startsWith('screen:'));
+      const dataUrl = screenSource
+        ? await captureSource(screenSource.id)
+        : null;
 
-      const result = await window.aegis?.screenshot.capture();
-      if (result?.success && result.data) {
-        onCapture(result.data);
+      if (dataUrl) {
+        onCapture(dataUrl);
         onClose();
+      } else {
+        // Fallback: main process capture
+        const result = await window.aegis?.screenshot.capture();
+        if (result?.success && result.data) {
+          onCapture(result.data);
+          onClose();
+        }
       }
     } catch (err) {
       console.error('[Screenshot] Screen capture failed:', err);
@@ -78,9 +102,9 @@ export function ScreenshotPicker({ open, onClose, onCapture }: ScreenshotPickerP
   const captureWindow = async (windowId: string) => {
     setCapturing(windowId);
     try {
-      const result = await window.aegis?.screenshot.captureWindow(windowId);
-      if (result?.success && result.data) {
-        onCapture(result.data);
+      const dataUrl = await captureSource(windowId);
+      if (dataUrl) {
+        onCapture(dataUrl);
         onClose();
       }
     } catch (err) {

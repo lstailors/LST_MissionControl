@@ -27,6 +27,8 @@ interface AegisAPI {
     capture: () => Promise<{ success: boolean; data?: string; error?: string }>;
     getWindows: () => Promise<Array<{ id: string; name: string; thumbnail: string }>>;
     captureWindow: (id: string) => Promise<{ success: boolean; data?: string; error?: string }>;
+    captureSourceStream?: (sourceId: string) => Promise<string | null>;
+    getSources?: () => Promise<Array<{ id: string; name: string; thumbnail: string }>>;
   };
   file: {
     openDialog: () => Promise<{ canceled: boolean; filePaths: string[] }>;
