@@ -200,7 +200,7 @@ export function ChatTabs() {
                     <button
                       key={session.key}
                       onClick={() => handleSelectSession(session.key)}
-                      className="w-full flex flex-col gap-0.5 px-3 py-2 rounded-lg text-right hover:bg-white/[0.05] transition-colors"
+                      className="w-full flex flex-col gap-0.5 px-3 py-2 rounded-lg text-start hover:bg-white/[0.05] transition-colors"
                     >
                       <span className="text-[12px] text-aegis-text font-medium truncate">
                         {session.label || session.key}

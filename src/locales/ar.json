@@ -110,8 +110,12 @@
     "totalMessages": "الرسائل",
     "categories": "التصنيفات",
     "noResults": "لا توجد نتائج",
-    "experimentalDesc": "هذي الميزة تحتاج سيرفر Memory API. فعّلها من الإعدادات → تجريبي عشان تتصل بقاعدة الذاكرة.",
-    "goToSettings": "فتح الإعدادات"
+    "experimentalDesc": "تصفّح وابحث في ذكريات المساعد. اتصل بسيرفر Memory API أو حدد مجلد الـ workspace اللي فيه ملفات .md",
+    "goToSettings": "تفعيل من الإعدادات",
+    "localOption": "ملفات محلية",
+    "localOptionDesc": "حدد مجلد الـ workspace اللي فيه MEMORY.md وملفات memory/",
+    "apiOption": "سيرفر API",
+    "apiOptionDesc": "اتصل بسيرفر Memory API للبحث الدلالي وإدارة الذكريات"
   },
   "settings": {
     "title": "الإعدادات",
@@ -131,7 +135,7 @@
     "saved": "تم الحفظ!",
     "experimental": "تجريبي",
     "memoryExplorer": "مستكشف الذاكرة",
-    "memoryExplorerDesc": "الاتصال بسيرفر Memory API لتصفح والبحث في الذكريات",
+    "memoryExplorerDesc": "تصفّح وابحث في الذكريات عبر سيرفر API أو ملفات .md محلية",
     "memoryApiUrl": "رابط Memory API",
     "memoryMode": "المصدر",
     "memoryLocal": "ملفات محلية",
@@ -172,11 +176,11 @@
     "placeholderDisconnected": "غير متصل",
     "send": "إرسال (Enter)",
     "stop": "إيقاف (Stop)",
+    "attachFile": "إرفاق ملف",
     "attachImage": "إرفاق صورة",
     "screenshot": "سكرين شوت",
     "voiceRecord": "تسجيل صوتي",
-    "emoji": "إيموجي",
-    "imageOnly": "⚠️ الـ Gateway يدعم الصور فقط حالياً"
+    "emoji": "إيموجي"
   },
   "screenshot": {
     "title": "سكرين شوت",

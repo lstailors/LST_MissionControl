@@ -156,7 +156,7 @@ export function ScreenshotPicker({ open, onClose, onCapture }: ScreenshotPickerP
                     <Monitor size={20} className="text-aegis-primary" />
                   )}
                 </div>
-                <div className={dir === 'rtl' ? 'text-right' : 'text-left'}>
+                <div className={dir === 'rtl' ? 'text-end' : 'text-start'}>
                   <div className="text-[14px] font-medium text-aegis-text">{t('screenshot.fullScreen')}</div>
                   <div className="text-[11px] text-aegis-text-dim">{t('screenshot.fullScreenDesc')}</div>
                 </div>
@@ -206,7 +206,7 @@ export function ScreenshotPicker({ open, onClose, onCapture }: ScreenshotPickerP
                     {/* Window Name */}
                     <div className="flex items-center gap-2 px-3 py-2 border-t border-aegis-border/30">
                       <AppWindow size={13} className="text-aegis-text-dim shrink-0" />
-                      <span className={clsx('text-[11px] text-aegis-text-muted truncate flex-1', dir === 'rtl' ? 'text-right' : 'text-left')}>
+                      <span className={clsx('text-[11px] text-aegis-text-muted truncate flex-1', dir === 'rtl' ? 'text-end' : 'text-start')}>
                         {w.name}
                       </span>
                     </div>

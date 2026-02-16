@@ -313,7 +313,7 @@ export function AgentHubPage() {
             </div>
             <div className="flex items-center gap-3 shrink-0">
               <ProgressRing percentage={usagePct} size={28} strokeWidth={2} color={color} />
-              <div className="text-right">
+              <div className="text-end">
                 <div className="text-[12px] font-semibold text-aegis-text">
                   {formatTokens(w.totalTokens)}
                 </div>
@@ -323,7 +323,7 @@ export function AgentHubPage() {
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[10px] text-white/20 w-[55px] text-right">
+              <span className="text-[10px] text-white/20 w-[55px] text-end">
                 {timeAgo(w.updatedAt)}
               </span>
               <ChevronDown
@@ -420,7 +420,7 @@ export function AgentHubPage() {
           </h1>
           <p className="text-[13px] text-aegis-text-dim mt-1">
             {t('agents.subtitle', 'Agents and active workers')}
-            <span className="text-white/20 ml-2">
+            <span className="text-white/20 ms-2">
               — {registeredAgents.length} {t('agents.agentsCount', 'agents')} · {workers.length} {t('agents.total', 'workers')}
             </span>
           </p>
@@ -483,7 +483,7 @@ export function AgentHubPage() {
                       strokeWidth={3}
                       color={MAIN_COLOR}
                     />
-                    <div className="text-right">
+                    <div className="text-end">
                       <div className="text-[18px] font-bold text-aegis-text">
                         {formatTokens(mainSession.totalTokens)}
                       </div>
@@ -539,7 +539,7 @@ export function AgentHubPage() {
               <div className="flex items-center justify-between mb-3">
                 <div className="text-[11px] text-white/25 uppercase tracking-wider font-semibold">
                   {t('agents.registeredAgents', 'Registered Agents')}
-                  <span className="text-white/15 ml-2">— {registeredAgents.length}</span>
+                  <span className="text-white/15 ms-2">— {registeredAgents.length}</span>
                 </div>
                 <button
                   onClick={() => setShowAddForm(!showAddForm)}
@@ -730,7 +730,7 @@ export function AgentHubPage() {
                             <div className="flex gap-2 justify-end">
                               <button onClick={() => setEditingAgentId(null)} className="px-3 py-1 rounded-lg text-[10px] text-white/30 hover:text-white/50">Cancel</button>
                               <button onClick={() => handleUpdateAgent(agent.id)} className="px-3 py-1 rounded-lg bg-aegis-primary/20 border border-aegis-primary/30 text-aegis-primary text-[10px] font-semibold">
-                                <Save size={10} className="inline mr-1" />Save
+                                <Save size={10} className="inline me-1" />Save
                               </button>
                             </div>
                           </div>
@@ -750,7 +750,7 @@ export function AgentHubPage() {
           <div>
             <div className="text-[11px] text-white/25 uppercase tracking-wider font-semibold mb-3">
               {t('agents.workers', 'Active Workers')}
-              <span className="text-white/15 ml-2">
+              <span className="text-white/15 ms-2">
                 — {workers.filter(w => w.running).length} {t('agents.running', 'running')} · {workers.length} {t('agents.total', 'total')}
               </span>
             </div>

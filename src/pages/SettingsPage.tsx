@@ -361,7 +361,7 @@ export function SettingsPageFull() {
         <div className="flex items-center justify-between py-3 border-b border-aegis-border/10">
           <div>
             <div className="text-[13px] text-aegis-text font-medium">{t('settings.memoryExplorer', 'Memory Explorer')}</div>
-            <div className="text-[11px] text-aegis-text-dim/60 mt-0.5">{t('settings.memoryExplorerDesc', 'Connect to a Memory API server to browse and search memories')}</div>
+            <div className="text-[11px] text-aegis-text-dim/60 mt-0.5">{t('settings.memoryExplorerDesc', 'Browse and search memories via API server or local .md files')}</div>
           </div>
           <button
             onClick={() => setMemoryExplorerEnabled(!memoryExplorerEnabled)}
@@ -453,7 +453,7 @@ export function SettingsPageFull() {
         <div className="text-center py-4 mb-4">
           <div className="text-3xl mb-2">🛡️</div>
           <div className="text-[14px] font-bold text-aegis-text">AEGIS Desktop</div>
-          <div className="text-[12px] text-aegis-text-dim mt-1">v4.0.0 — Mission Control</div>
+          <div className="text-[12px] text-aegis-text-dim mt-1">v5.0.0 — Mission Control</div>
           <div className="text-[11px] text-aegis-text-dim mt-0.5">Advanced Executive General Intelligence System</div>
         </div>
         <div className="space-y-2 border-t border-aegis-border/15 pt-3">

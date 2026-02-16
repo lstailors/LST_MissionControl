@@ -334,13 +334,13 @@ export function CronMonitorPage() {
                       <span className="mx-1.5">·</span>
                       Last: {formatTime(getLastRun(job))}
                       {job.state?.lastStatus === 'error' && (
-                        <span className="text-red-400/70 ml-1.5">⚠ error</span>
+                        <span className="text-red-400/70 ms-1.5">⚠ error</span>
                       )}
                     </div>
                   </div>
 
                   {/* ③ Next Run — label above, time value below (conceptual: teal colored) */}
-                  <div className="text-right shrink-0 mr-2">
+                  <div className="text-end shrink-0 me-2">
                     <div className="text-[11px] text-white/25">Next run</div>
                     <div className={clsx(
                       'text-[14px] font-semibold',
@@ -448,7 +448,7 @@ export function CronMonitorPage() {
                               <div className="text-[10px] text-white/20 shrink-0">
                                 {run.durationMs ? (run.durationMs < 1000 ? run.durationMs + 'ms' : Math.round(run.durationMs / 1000) + 's') : '—'}
                               </div>
-                              <div className="text-[10px] text-white/20 shrink-0 w-[70px] text-right">
+                              <div className="text-[10px] text-white/20 shrink-0 w-[70px] text-end">
                                 {run.ts ? new Date(run.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
                               </div>
                             </div>

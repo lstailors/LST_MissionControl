@@ -135,7 +135,7 @@ function TaskCard({ task, onMove, onDelete, onProgress }: {
           </button>
         )}
         <button onClick={() => onDelete(task.id)}
-          className="text-[10px] p-1 rounded-lg ml-auto transition-colors"
+          className="text-[10px] p-1 rounded-lg ms-auto transition-colors"
           style={{ color: 'rgba(244,112,103,0.4)' }}>
           <X size={12} />
         </button>

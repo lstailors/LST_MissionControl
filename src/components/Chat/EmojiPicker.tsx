@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Smile } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { getDirection } from '@/i18n';
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
 import clsx from 'clsx';
@@ -63,7 +64,10 @@ export function EmojiPicker({ onSelect, disabled }: EmojiPickerProps) {
 
       {/* Picker Popup */}
       {open && (
-        <div className="absolute bottom-full mb-2 right-0 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
+        <div className={clsx(
+          "absolute bottom-full mb-2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200",
+          getDirection(language) === 'rtl' ? 'right-0' : 'left-0'
+        )}>
           <div className="rounded-2xl overflow-hidden shadow-2xl border border-aegis-border/30 bg-aegis-surface">
             <Picker
               data={data}

@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState, useRef } from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppLayout } from '@/components/Layout/AppLayout';
@@ -10,6 +10,7 @@ import { CronMonitorPage } from '@/pages/CronMonitor';
 import { AgentHubPage } from '@/pages/AgentHub';
 import { MemoryExplorerPage } from '@/pages/MemoryExplorer';
 import { SettingsPageFull } from '@/pages/SettingsPage';
+import { PairingScreen } from '@/components/PairingScreen';
 import { useChatStore } from '@/stores/chatStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { gateway } from '@/services/gateway';
@@ -31,6 +32,12 @@ export default function App() {
     setSessions,
     setTokenUsage,
   } = useChatStore();
+
+  // ── Auto-Pairing State ──
+  const [needsPairing, setNeedsPairing] = useState(false);
+  const [scopeError, setScopeError] = useState<string>('');
+  const [gatewayHttpUrl, setGatewayHttpUrl] = useState('http://127.0.0.1:18789');
+  const pairingTriggeredRef = useRef(false);
 
   // ── Load Sessions from Gateway ──
   const loadSessions = useCallback(async () => {
@@ -111,6 +118,11 @@ export default function App() {
       onStatusChange: (status) => {
         setConnectionStatus(status);
         if (status.connected) {
+          // Successfully connected — dismiss pairing screen if showing
+          if (needsPairing) {
+            setNeedsPairing(false);
+            pairingTriggeredRef.current = false;
+          }
           loadSessions();
           loadTokenUsage();
           useNotificationStore.getState().addNotification({
@@ -118,6 +130,15 @@ export default function App() {
             title: 'متصل',
             body: 'تم الاتصال بالـ Gateway بنجاح',
           });
+        }
+      },
+      onScopeError: (error) => {
+        console.warn('[App] 🔑 Scope error — triggering pairing flow:', error);
+        // Only trigger pairing once per connection attempt
+        if (!pairingTriggeredRef.current) {
+          pairingTriggeredRef.current = true;
+          setScopeError(error);
+          setNeedsPairing(true);
         }
       },
     });
@@ -132,6 +153,9 @@ export default function App() {
         const config = await window.aegis.config.get();
         const wsUrl = config.gatewayUrl || config.gatewayWsUrl || 'ws://127.0.0.1:18789';
         const token = config.gatewayToken || '';
+        // Store HTTP URL for pairing flow
+        const httpUrl = wsUrl.replace(/^ws:/, 'http:').replace(/^wss:/, 'https:');
+        setGatewayHttpUrl(httpUrl);
         if (!localStorage.getItem('aegis-language') && config.installerLanguage) {
           const lang = config.installerLanguage as 'ar' | 'en';
           changeLanguage(lang);
@@ -146,20 +170,61 @@ export default function App() {
     }
   };
 
+  // ── Pairing Handlers ──
+  const handlePairingComplete = useCallback(async (token: string) => {
+    console.log('[App] 🔑 Pairing complete — reconnecting with new token');
+    // Save token to config via IPC
+    if (window.aegis?.pairing?.saveToken) {
+      await window.aegis.pairing.saveToken(token);
+    }
+    // Also update config via the existing config:save IPC
+    if (window.aegis?.config?.save) {
+      await window.aegis.config.save({ gatewayToken: token });
+    }
+    // Reconnect gateway with new token
+    gateway.reconnectWithToken(token);
+    setNeedsPairing(false);
+    pairingTriggeredRef.current = false;
+
+    useNotificationStore.getState().addNotification({
+      type: 'connection',
+      title: 'تم الربط',
+      body: 'تم ربط AEGIS Desktop بالـ Gateway بنجاح',
+    });
+  }, []);
+
+  const handlePairingCancel = useCallback(() => {
+    console.log('[App] Pairing cancelled by user');
+    setNeedsPairing(false);
+    pairingTriggeredRef.current = false;
+  }, []);
+
   return (
-    <HashRouter>
-      <Routes>
-        <Route element={<AppLayout />}>
-          <Route path="/" element={<DashboardPage />} />
-          <Route path="/chat" element={<ChatPage />} />
-          <Route path="/workshop" element={<WorkshopPage />} />
-          <Route path="/costs" element={<CostTrackerPage />} />
-          <Route path="/cron" element={<CronMonitorPage />} />
-          <Route path="/agents" element={<AgentHubPage />} />
-          <Route path="/memory" element={<MemoryExplorerPage />} />
-          <Route path="/settings" element={<SettingsPageFull />} />
-        </Route>
-      </Routes>
-    </HashRouter>
+    <>
+      {/* Pairing overlay — shown when Gateway rejects due to missing scopes */}
+      {needsPairing && (
+        <PairingScreen
+          gatewayHttpUrl={gatewayHttpUrl}
+          onPaired={handlePairingComplete}
+          onCancel={handlePairingCancel}
+          errorMessage={scopeError}
+        />
+      )}
+
+      <HashRouter>
+        <Routes>
+          <Route element={<AppLayout />}>
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/chat" element={<ChatPage />} />
+            <Route path="/workshop" element={<WorkshopPage />} />
+            <Route path="/costs" element={<CostTrackerPage />} />
+            <Route path="/cron" element={<CronMonitorPage />} />
+            <Route path="/agents" element={<AgentHubPage />} />
+            <Route path="/memory" element={<MemoryExplorerPage />} />
+            <Route path="/settings" element={<SettingsPageFull />} />
+          </Route>
+        </Routes>
+      </HashRouter>
+    </>
   );
 }

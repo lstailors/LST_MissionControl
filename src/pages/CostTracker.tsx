@@ -125,12 +125,12 @@ function ExportMenu({ sessions, totalTokens, totalCost, byModel, formatTokens, e
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 top-full mt-1 z-50 w-44 rounded-xl bg-aegis-elevated-solid border border-aegis-border shadow-glass overflow-hidden">
-            <button onClick={downloadCSV} className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-white/[0.05] text-[12px] text-aegis-text-muted text-right transition-colors">
+          <div className="absolute start-0 top-full mt-1 z-50 w-44 rounded-xl bg-aegis-elevated-solid border border-aegis-border shadow-glass overflow-hidden">
+            <button onClick={downloadCSV} className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-white/[0.05] text-[12px] text-aegis-text-muted text-start transition-colors">
               <FileText size={14} className="text-aegis-primary shrink-0" />
               <span>تحميل CSV</span>
             </button>
-            <button onClick={copyText} className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-white/[0.05] text-[12px] text-aegis-text-muted text-right transition-colors">
+            <button onClick={copyText} className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-white/[0.05] text-[12px] text-aegis-text-muted text-start transition-colors">
               <Copy size={14} className="text-aegis-accent shrink-0" />
               <span>نسخ ملخص</span>
             </button>
@@ -381,7 +381,7 @@ export function CostTrackerPage() {
                     <div className="text-[12px] font-medium text-aegis-text">{label}</div>
                     <div className="text-[10px] font-mono" style={{ color: 'rgba(255,255,255,0.25)' }}>{model}</div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-end">
                     <div className="text-[12px] font-mono text-aegis-text">{formatTokens(s.totalTokens || 0)}</div>
                     <div className="text-[10px] font-mono text-aegis-success">${cost.toFixed(3)}</div>
                   </div>

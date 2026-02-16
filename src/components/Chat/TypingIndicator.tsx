@@ -1,12 +1,17 @@
 import clsx from 'clsx';
+import { useSettingsStore } from '@/stores/settingsStore';
+import { getDirection } from '@/i18n';
 
 // ═══════════════════════════════════════════════════════════
 // Typing Indicator — smooth animated dots
 // ═══════════════════════════════════════════════════════════
 
 export function TypingIndicator() {
+  const { language } = useSettingsStore();
+  const dir = getDirection(language);
+
   return (
-    <div className="flex items-start gap-3 px-5 py-2 animate-fade-in" dir="rtl">
+    <div className="flex items-start gap-3 px-5 py-2 animate-fade-in" dir={dir}>
       {/* Avatar */}
       <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-aegis-primary to-aegis-accent flex items-center justify-center shrink-0 mt-0.5 shadow-glow-sm">
         <span className="text-[10px] font-bold text-white">A</span>

@@ -236,18 +236,16 @@ export function DashboardPage() {
         {/* Context Usage — Large Card with ProgressRing */}
         <GlassCard delay={0.2} className="lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-4">
-              <ProgressRing percentage={usagePct} size={80} strokeWidth={5} />
-              <div>
-                <h3 className="text-[14px] font-semibold text-aegis-text flex items-center gap-2">
-                  <BarChart3 size={16} className="text-aegis-primary" />
-                  {t('dashboard.contextUsage')}
-                </h3>
-                <span className="text-[11px] text-aegis-text-dim">
-                  {formatTokens(tokenUsage?.contextTokens || 0)} / {formatTokens(tokenUsage?.maxTokens || 200000)}
-                </span>
-              </div>
+            <div>
+              <h3 className="text-[14px] font-semibold text-aegis-text flex items-center gap-2">
+                <BarChart3 size={16} className="text-aegis-primary" />
+                {t('dashboard.contextUsage')}
+              </h3>
+              <span className="text-[11px] text-aegis-text-dim">
+                {formatTokens(tokenUsage?.contextTokens || 0)} / {formatTokens(tokenUsage?.maxTokens || 200000)}
+              </span>
             </div>
+            <ProgressRing percentage={usagePct} size={80} strokeWidth={5} />
           </div>
 
           {/* Sessions Usage Bars */}

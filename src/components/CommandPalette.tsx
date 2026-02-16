@@ -159,7 +159,7 @@ export function CommandPalette() {
                 onClick={() => { cmd.action(); setCommandPaletteOpen(false); }}
                 onMouseEnter={() => setSelectedIdx(i)}
                 className={clsx(
-                  'w-full flex items-center gap-3 px-4 py-2.5 text-right transition-colors',
+                  'w-full flex items-center gap-3 px-4 py-2.5 text-start transition-colors',
                   i === selectedIdx ? 'bg-aegis-primary/10' : 'hover:bg-white/[0.03]'
                 )}
               >

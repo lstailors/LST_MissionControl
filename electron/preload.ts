@@ -19,32 +19,7 @@ const api = {
     save: (config: any) => ipcRenderer.invoke('config:save', config),
   },
 
-  // ── Gateway ──
-  gateway: {
-    connect: () => ipcRenderer.invoke('gateway:connect'),
-    send: (message: string, attachments?: any[]) =>
-      ipcRenderer.invoke('gateway:send', message, attachments),
-    sendToSession: (sessionKey: string, message: string, attachments?: any[]) =>
-      ipcRenderer.invoke('gateway:sendToSession', sessionKey, message, attachments),
-    getSessions: () => ipcRenderer.invoke('gateway:getSessions'),
-    getHistory: (sessionKey: string, limit?: number) =>
-      ipcRenderer.invoke('gateway:getHistory', sessionKey, limit),
-    status: () => ipcRenderer.invoke('gateway:status'),
-
-    // Events from gateway
-    onMessage: (cb: (msg: any) => void) => {
-      ipcRenderer.on('gateway:message', (_e, msg) => cb(msg));
-    },
-    onStreamChunk: (cb: (chunk: any) => void) => {
-      ipcRenderer.on('gateway:stream-chunk', (_e, chunk) => cb(chunk));
-    },
-    onStreamEnd: (cb: (msg: any) => void) => {
-      ipcRenderer.on('gateway:stream-end', (_e, msg) => cb(msg));
-    },
-    onStatusChange: (cb: (status: any) => void) => {
-      ipcRenderer.on('gateway:status', (_e, status) => cb(status));
-    },
-  },
+  // Gateway IPC removed — all WS communication handled by src/services/gateway.ts (renderer-side)
 
   // ── Screenshot ──
   memory: {
@@ -107,6 +82,39 @@ const api = {
     read: (filePath: string) =>
       ipcRenderer.invoke('voice:read', filePath),
   },
+
+  // ── Pairing (Auto-Pair with Gateway) ──
+  pairing: {
+    getToken: () => ipcRenderer.invoke('pairing:get-token'),
+    saveToken: (token: string) => ipcRenderer.invoke('pairing:save-token', token),
+    requestPairing: (httpBaseUrl: string) => ipcRenderer.invoke('pairing:request', httpBaseUrl),
+    poll: (httpBaseUrl: string, deviceId: string) => ipcRenderer.invoke('pairing:poll', httpBaseUrl, deviceId),
+  },
+
+  // ── Artifacts Preview ──
+  artifact: {
+    open: (data: { type: string; title: string; content: string }) =>
+      ipcRenderer.invoke('artifact:open', data),
+  },
+
+  // ── Image Save ──
+  image: {
+    save: (src: string, suggestedName: string) =>
+      ipcRenderer.invoke('image:save', src, suggestedName),
+  },
+
+  // ── Device Identity (Ed25519 for Gateway auth) ──
+  device: {
+    getIdentity: () => ipcRenderer.invoke('device:getIdentity'),
+    sign: (params: {
+      nonce?: string;
+      clientId: string;
+      clientMode: string;
+      role: string;
+      scopes: string[];
+      token: string;
+    }) => ipcRenderer.invoke('device:sign', params),
+  },
 };
 
 contextBridge.exposeInMainWorld('aegis', api);
@@ -114,4 +122,4 @@ contextBridge.exposeInMainWorld('aegis', api);
 // Type declaration for renderer
 export type AegisAPI = typeof api;
 
-console.log('🛡️ AEGIS Preload v3.0 ready');
+console.log('🛡️ AEGIS Preload v5.0 ready');

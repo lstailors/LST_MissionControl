@@ -151,23 +151,39 @@ function MemoryDisabledView() {
   return (
     <PageTransition>
       <div className="min-h-[80vh] flex items-center justify-center">
-        <div className="text-center max-w-md">
+        <div className="text-center max-w-lg">
           <div className="w-16 h-16 rounded-2xl bg-aegis-primary/10 border border-aegis-primary/20 flex items-center justify-center mx-auto mb-5">
-            <FlaskConical size={28} className="text-aegis-primary" />
+            <Brain size={28} className="text-aegis-primary" />
           </div>
-          <h2 className="text-[20px] font-bold text-aegis-text mb-2">Memory Explorer</h2>
-          <span className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/20 mb-4">
-            EXPERIMENTAL
-          </span>
+          <h2 className="text-[20px] font-bold text-aegis-text mb-3">Memory Explorer</h2>
           <p className="text-[13px] text-aegis-text-dim/70 mb-6 leading-relaxed">
-            {t('memory.experimentalDesc', 'This feature requires a Memory API server. Enable it in Settings → Experimental to connect to your memory database.')}
+            {t('memory.experimentalDesc', 'Browse, search, and manage your agent\'s memories. Connect to a Memory API server or point to your local workspace folder containing .md files.')}
           </p>
+
+          {/* Two options */}
+          <div className="flex items-stretch gap-3 mb-6 max-w-md mx-auto">
+            <div className="flex-1 p-4 rounded-xl border border-white/[0.08] bg-white/[0.02]">
+              <div className="text-[20px] mb-2">📁</div>
+              <div className="text-[12px] font-semibold text-aegis-text mb-1">{t('memory.localOption', 'Local Files')}</div>
+              <div className="text-[11px] text-white/30 leading-relaxed">
+                {t('memory.localOptionDesc', 'Select your workspace folder with MEMORY.md and memory/ files')}
+              </div>
+            </div>
+            <div className="flex-1 p-4 rounded-xl border border-white/[0.08] bg-white/[0.02]">
+              <div className="text-[20px] mb-2">🔌</div>
+              <div className="text-[12px] font-semibold text-aegis-text mb-1">{t('memory.apiOption', 'API Server')}</div>
+              <div className="text-[11px] text-white/30 leading-relaxed">
+                {t('memory.apiOptionDesc', 'Connect to a Memory API server for semantic search and management')}
+              </div>
+            </div>
+          </div>
+
           <button
             onClick={() => navigate('/settings')}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-aegis-primary/15 border border-aegis-primary/30 text-aegis-primary text-[13px] font-semibold hover:bg-aegis-primary/25 transition-colors"
           >
             <Settings size={16} />
-            {t('memory.goToSettings', 'Open Settings')}
+            {t('memory.goToSettings', 'Enable in Settings')}
           </button>
         </div>
       </div>
@@ -338,7 +354,7 @@ export function MemoryExplorerPage() {
               >
                 {pill.label}
                 {pill.key === 'all' && count > 0 && (
-                  <span className="ml-1 opacity-60">{count}</span>
+                  <span className="ms-1 opacity-60">{count}</span>
                 )}
               </button>
             );
@@ -477,7 +493,7 @@ export function MemoryExplorerPage() {
                   </div>
 
                   {/* Age */}
-                  <span className="text-[11px] text-white/15 font-mono min-w-[28px] text-left">
+                  <span className="text-[11px] text-white/15 font-mono min-w-[28px] text-start">
                     {mem.created_at ? timeAgoShort(mem.created_at) : '—'}
                   </span>
                 </div>

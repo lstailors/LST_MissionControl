@@ -124,8 +124,12 @@
     "noResults": "No results found",
     "add": "Add Memory",
     "edit": "Edit",
-    "experimentalDesc": "This feature requires a Memory API server. Enable it in Settings → Experimental to connect to your memory database.",
-    "goToSettings": "Open Settings"
+    "experimentalDesc": "Browse, search, and manage your agent's memories. Connect to a Memory API server or point to your local workspace folder containing .md files.",
+    "goToSettings": "Enable in Settings",
+    "localOption": "Local Files",
+    "localOptionDesc": "Select your workspace folder with MEMORY.md and memory/ files",
+    "apiOption": "API Server",
+    "apiOptionDesc": "Connect to a Memory API server for semantic search and management"
   },
   "settings": {
     "title": "Settings",
@@ -163,7 +167,7 @@
     "theme": "Theme",
     "experimental": "Experimental",
     "memoryExplorer": "Memory Explorer",
-    "memoryExplorerDesc": "Connect to a Memory API server to browse and search memories",
+    "memoryExplorerDesc": "Browse and search memories via API server or local .md files",
     "memoryApiUrl": "Memory API URL",
     "memoryMode": "Source",
     "memoryLocal": "Local Files",
@@ -208,11 +212,11 @@
     "placeholderDisconnected": "Disconnected",
     "send": "Send (Enter)",
     "stop": "Stop",
+    "attachFile": "Attach File",
     "attachImage": "Attach Image",
     "screenshot": "Screenshot",
     "voiceRecord": "Voice Record",
-    "emoji": "Emoji",
-    "imageOnly": "⚠️ Gateway supports images only"
+    "emoji": "Emoji"
   },
   "screenshot": {
     "title": "Screenshot",

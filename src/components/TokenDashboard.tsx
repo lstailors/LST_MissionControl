@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { X, Zap, TrendingUp, Clock, Layers, RefreshCw, Activity } from 'lucide-react';
 import { useChatStore } from '@/stores/chatStore';
+import { useSettingsStore } from '@/stores/settingsStore';
+import { getDirection } from '@/i18n';
 import { gateway } from '@/services/gateway';
 import clsx from 'clsx';
 
@@ -28,6 +30,8 @@ interface TokenDashboardProps {
 
 export function TokenDashboard({ open, onClose }: TokenDashboardProps) {
   const { tokenUsage } = useChatStore();
+  const { language } = useSettingsStore();
+  const dir = getDirection(language);
   const [sessions, setSessions] = useState<SessionDetail[]>([]);
   const [loading, setLoading] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
@@ -137,7 +141,7 @@ export function TokenDashboard({ open, onClose }: TokenDashboardProps) {
       <div
         className="w-[560px] max-h-[85vh] glass rounded-3xl shadow-float overflow-hidden animate-slide-up"
         onClick={(e) => e.stopPropagation()}
-        dir="rtl"
+        dir={dir}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-aegis-border/20">

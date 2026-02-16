@@ -29,70 +29,7 @@ interface WorkshopState {
 export const useWorkshopStore = create<WorkshopState>()(
   persist(
     (set) => ({
-      tasks: [
-        {
-          id: 'demo-1',
-          title: 'إطلاق AEGIS Desktop v4.0',
-          description: 'بناء النسخة النهائية + NSIS Installer + Portable',
-          priority: 'high' as const,
-          status: 'inProgress' as const,
-          createdAt: new Date().toISOString(),
-          tags: ['release'],
-          assignedAgent: 'Toka 🔥',
-          progress: 75,
-        },
-        {
-          id: 'demo-2',
-          title: 'تحسين صفحة الذاكرة',
-          description: 'تحميل تلقائي + شريط ملون + فلاتر التصنيف',
-          priority: 'high' as const,
-          status: 'done' as const,
-          createdAt: new Date().toISOString(),
-          tags: ['ui'],
-          assignedAgent: 'Deacu 🔮',
-          progress: 100,
-        },
-        {
-          id: 'demo-3',
-          title: 'نظام Themes متعدد',
-          description: 'Ocean Dark + Midnight + Light — تبديل فوري',
-          priority: 'medium' as const,
-          status: 'queue' as const,
-          createdAt: new Date().toISOString(),
-          tags: ['v5.0'],
-        },
-        {
-          id: 'demo-4',
-          title: 'Auto-update mechanism',
-          description: 'التحقق من تحديثات + تنزيل تلقائي',
-          priority: 'low' as const,
-          status: 'queue' as const,
-          createdAt: new Date().toISOString(),
-          tags: ['v5.0'],
-        },
-        {
-          id: 'demo-5',
-          title: 'Notification Center',
-          description: 'تاريخ الإشعارات + Bell badge في TitleBar',
-          priority: 'medium' as const,
-          status: 'done' as const,
-          createdAt: new Date().toISOString(),
-          tags: ['ui'],
-          assignedAgent: 'Avii ⚡',
-          progress: 100,
-        },
-        {
-          id: 'demo-6',
-          title: 'تصدير تقرير التكاليف',
-          description: 'CSV download + نسخ ملخص للـ clipboard',
-          priority: 'medium' as const,
-          status: 'inProgress' as const,
-          createdAt: new Date().toISOString(),
-          tags: ['feature'],
-          assignedAgent: 'Sadem 🌙',
-          progress: 50,
-        },
-      ],
+      tasks: [],
 
       addTask: (partial) => set((state) => ({
         tasks: [...state.tasks, {

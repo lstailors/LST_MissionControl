@@ -15,6 +15,72 @@ import {
 import * as path from 'path';
 import * as fs from 'fs';
 import { createTray } from './tray';
+import * as crypto from 'crypto';
+import { execFileSync } from 'child_process';
+
+// ═══════════════════════════════════════════════════════════
+// Device Identity (Ed25519) — Required for Gateway operator scopes
+// ═══════════════════════════════════════════════════════════
+
+interface DeviceIdentity {
+  privateKeyPem: string;
+  publicKeyPem: string;
+  publicKeyRawB64Url: string;
+  deviceId: string;
+}
+
+function base64UrlEncode(buf: Buffer): string {
+  return buf.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function getOrCreateDeviceIdentity(appPath: string): DeviceIdentity {
+  const identityPath = path.join(appPath, 'device-identity.json');
+
+  // Try loading existing identity
+  try {
+    if (fs.existsSync(identityPath)) {
+      const data = JSON.parse(fs.readFileSync(identityPath, 'utf8'));
+      if (data.privateKeyPem && data.publicKeyPem && data.deviceId && data.publicKeyRawB64Url) {
+        return data;
+      }
+    }
+  } catch (e) {
+    console.error('[Device] Failed to load identity:', e);
+  }
+
+  // Generate new Ed25519 keypair
+  console.log('[Device] Generating new Ed25519 keypair...');
+  const { privateKey, publicKey } = crypto.generateKeyPairSync('ed25519', {
+    privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
+    publicKeyEncoding: { type: 'spki', format: 'pem' },
+  });
+
+  // Extract raw 32-byte public key from SPKI DER
+  const spkiDer = crypto.createPublicKey(publicKey).export({ type: 'spki', format: 'der' });
+  const rawKey = spkiDer.subarray(spkiDer.length - 32);
+
+  const identity: DeviceIdentity = {
+    privateKeyPem: privateKey,
+    publicKeyPem: publicKey,
+    publicKeyRawB64Url: base64UrlEncode(rawKey),
+    deviceId: crypto.createHash('sha256').update(rawKey).digest('hex'),
+  };
+
+  // Save with restrictive permissions
+  fs.mkdirSync(path.dirname(identityPath), { recursive: true });
+  fs.writeFileSync(identityPath, JSON.stringify(identity, null, 2), { mode: 0o600 });
+  console.log('[Device] Identity created:', identity.deviceId.substring(0, 16) + '...');
+
+  return identity;
+}
+
+let _deviceIdentity: DeviceIdentity | null = null;
+function getDeviceIdentity(): DeviceIdentity {
+  if (!_deviceIdentity) {
+    _deviceIdentity = getOrCreateDeviceIdentity(app.getPath('userData'));
+  }
+  return _deviceIdentity;
+}
 
 // ═══════════════════════════════════════════════════════════
 // Config
@@ -82,6 +148,7 @@ function saveConfig(newConfig: Partial<AegisConfig>): void {
 // ═══════════════════════════════════════════════════════════
 
 let mainWindow: BrowserWindow | null = null;
+let previewWindow: BrowserWindow | null = null;
 let splashWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 
@@ -170,6 +237,22 @@ function createWindow(): void {
     show: false,
   });
 
+  // Rewrite Origin header for WebSocket connections (file:// → localhost)
+  // This allows the packaged app to connect to any Gateway without config changes
+  mainWindow.webContents.session.webRequest.onBeforeSendHeaders(
+    { urls: ['ws://*/*', 'wss://*/*'] },
+    (details, callback) => {
+      // Extract gateway host from the URL and set it as origin
+      try {
+        const wsUrl = new URL(details.url);
+        details.requestHeaders['Origin'] = `http://${wsUrl.hostname}:${wsUrl.port}`;
+      } catch {
+        details.requestHeaders['Origin'] = 'http://127.0.0.1:18789';
+      }
+      callback({ requestHeaders: details.requestHeaders });
+    }
+  );
+
   // Allow loading external images (Wikipedia, Cloudinary, etc.)
   mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
     callback({
@@ -177,6 +260,7 @@ function createWindow(): void {
         ...details.responseHeaders,
         'Content-Security-Policy': [
           "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; " +
+          "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; " +
           "img-src 'self' data: blob: https: http:; " +
           "media-src 'self' data: blob: https: http:; " +
           "connect-src 'self' ws: wss: http: https:; " +
@@ -194,13 +278,6 @@ function createWindow(): void {
   } else {
     const indexPath = path.join(__dirname, '..', 'dist', 'index.html');
     console.log('[Window] Loading:', indexPath);
-
-    // For file:// protocol, disable webSecurity so WebSocket can connect
-    // (CSP headers don't apply to file:// loads)
-    mainWindow.webContents.session.webRequest.onBeforeSendHeaders((details, callback) => {
-      callback({ requestHeaders: { ...details.requestHeaders, Origin: 'http://127.0.0.1:18789' } });
-    });
-
     mainWindow.loadFile(indexPath);
   }
 
@@ -332,12 +409,230 @@ function setupIPC(): void {
   });
 
   // Gateway is handled by React renderer — these are no-op stubs to prevent IPC errors
-  ipcMain.handle('gateway:connect', () => ({ success: true, info: 'Handled by renderer' }));
-  ipcMain.handle('gateway:send', () => ({ success: true }));
-  ipcMain.handle('gateway:sendToSession', () => ({ success: true }));
-  ipcMain.handle('gateway:getSessions', () => ({ success: true, data: [] }));
-  ipcMain.handle('gateway:getHistory', () => ({ success: true, data: [] }));
-  ipcMain.handle('gateway:status', () => ({ connected: false, connecting: false }))
+  // Gateway IPC removed — all WS communication handled by src/services/gateway.ts (renderer-side)
+
+  // ── Pairing (Auto-Pair with Gateway) ──
+  ipcMain.handle('pairing:get-token', () => {
+    return config.gatewayToken || null;
+  });
+
+  ipcMain.handle('pairing:save-token', (_e, token: string) => {
+    saveConfig({ gatewayToken: token });
+    console.log('[Pairing] Token saved to config');
+    return { success: true };
+  });
+
+  ipcMain.handle('pairing:request', async (_e, httpBaseUrl: string) => {
+    try {
+      const url = `${httpBaseUrl}/v1/pair`;
+      console.log('[Pairing] POST', url);
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          clientId: 'openclaw-control-ui',
+          clientName: 'AEGIS Desktop',
+          platform: process.platform,
+          scopes: ['operator.read', 'operator.write', 'operator.admin'],
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.text();
+        throw new Error(`HTTP ${res.status}: ${body}`);
+      }
+      return await res.json();
+    } catch (err: any) {
+      console.error('[Pairing] Request error:', err.message);
+      throw err;
+    }
+  });
+
+  ipcMain.handle('pairing:poll', async (_e, httpBaseUrl: string, deviceId: string) => {
+    try {
+      const url = `${httpBaseUrl}/v1/pair/${encodeURIComponent(deviceId)}/status`;
+      const res = await fetch(url);
+      if (!res.ok) {
+        const body = await res.text();
+        throw new Error(`HTTP ${res.status}: ${body}`);
+      }
+      return await res.json();
+    } catch (err: any) {
+      console.error('[Pairing] Poll error:', err.message);
+      throw err;
+    }
+  })
+
+  // ── Artifacts Preview Window ──
+  ipcMain.handle('artifact:open', async (_e, data: { type: string; title: string; content: string }) => {
+    try {
+      // Always copy latest preview-container.html to dist-electron
+      const htmlSrc = path.join(__dirname, '..', 'electron', 'preview-container.html');
+      const htmlDst = path.join(__dirname, 'preview-container.html');
+      if (fs.existsSync(htmlSrc)) {
+        fs.copyFileSync(htmlSrc, htmlDst);
+      }
+
+      const htmlPath = fs.existsSync(htmlDst) ? htmlDst : htmlSrc;
+
+      if (!previewWindow || previewWindow.isDestroyed()) {
+        previewWindow = new BrowserWindow({
+          width: 1200,
+          height: 800,
+          minWidth: 600,
+          minHeight: 400,
+          title: `AEGIS Preview — ${data.title}`,
+          backgroundColor: '#0d1117',
+          autoHideMenuBar: true,
+          webPreferences: {
+            nodeIntegration: false,
+            contextIsolation: true,
+            sandbox: true,
+            preload: path.join(__dirname, 'preload-preview.js'),
+          },
+        });
+
+        previewWindow.loadFile(htmlPath);
+        previewWindow.on('closed', () => { previewWindow = null; });
+
+        // Send content after page loads
+        previewWindow.webContents.on('did-finish-load', () => {
+          previewWindow?.webContents.send('artifact:content', data);
+        });
+      } else {
+        // Window exists — update content and focus
+        previewWindow.webContents.send('artifact:content', data);
+        previewWindow.setTitle(`AEGIS Preview — ${data.title}`);
+        previewWindow.focus();
+      }
+
+      return { success: true };
+    } catch (err: any) {
+      console.error('[Preview] Failed to open:', err.message);
+      return { success: false, error: err.message };
+    }
+  });
+
+  // ── Clipboard (for preview window sandbox fallback) ──
+  ipcMain.handle('clipboard:write', (_e, text: string) => {
+    clipboard.writeText(text);
+  });
+
+  // ── Image Save (download to local filesystem) ──
+  ipcMain.handle('image:save', async (_e, src: string, suggestedName: string) => {
+    try {
+      // Determine file extension from source or name
+      const ext = (suggestedName.match(/\.(\w+)$/) || [, 'png'])[1];
+      const filterMap: Record<string, { name: string; extensions: string[] }> = {
+        png: { name: 'PNG Image', extensions: ['png'] },
+        jpg: { name: 'JPEG Image', extensions: ['jpg', 'jpeg'] },
+        jpeg: { name: 'JPEG Image', extensions: ['jpg', 'jpeg'] },
+        gif: { name: 'GIF Image', extensions: ['gif'] },
+        webp: { name: 'WebP Image', extensions: ['webp'] },
+        svg: { name: 'SVG Image', extensions: ['svg'] },
+        bmp: { name: 'BMP Image', extensions: ['bmp'] },
+      };
+
+      const result = await dialog.showSaveDialog(mainWindow!, {
+        title: 'حفظ الصورة',
+        defaultPath: suggestedName,
+        filters: [
+          filterMap[ext.toLowerCase()] || { name: 'Image', extensions: [ext] },
+          { name: 'All Files', extensions: ['*'] },
+        ],
+      });
+
+      if (result.canceled || !result.filePath) {
+        return { success: false, canceled: true };
+      }
+
+      let imageBuffer: Buffer;
+
+      if (src.startsWith('data:')) {
+        // Base64 data URL → decode to buffer
+        const base64 = src.split(',')[1];
+        imageBuffer = Buffer.from(base64, 'base64');
+      } else if (src.startsWith('http://') || src.startsWith('https://')) {
+        // HTTP URL → fetch and save
+        const { net } = require('electron');
+        const response = await net.fetch(src);
+        const arrayBuffer = await response.arrayBuffer();
+        imageBuffer = Buffer.from(arrayBuffer);
+      } else if (src.startsWith('aegis-media:')) {
+        // Local file path via aegis-media protocol
+        const localPath = src.replace('aegis-media:', '');
+        imageBuffer = fs.readFileSync(localPath);
+      } else if (fs.existsSync(src)) {
+        // Direct filesystem path
+        imageBuffer = fs.readFileSync(src);
+      } else {
+        return { success: false, error: 'Unsupported image source' };
+      }
+
+      fs.writeFileSync(result.filePath, imageBuffer);
+      console.log('[Image] Saved to:', result.filePath);
+
+      // Show notification
+      if (Notification.isSupported()) {
+        new Notification({
+          title: 'تم حفظ الصورة',
+          body: path.basename(result.filePath),
+          silent: true,
+        }).show();
+      }
+
+      return { success: true, path: result.filePath };
+    } catch (err: any) {
+      console.error('[Image] Save failed:', err.message);
+      return { success: false, error: err.message };
+    }
+  });
+
+  // ── Device Identity (Ed25519 signing for Gateway auth) ──
+  ipcMain.handle('device:getIdentity', () => {
+    const identity = getDeviceIdentity();
+    return {
+      deviceId: identity.deviceId,
+      publicKey: identity.publicKeyRawB64Url,
+    };
+  });
+
+  ipcMain.handle('device:sign', (_e, params: {
+    nonce?: string;
+    clientId: string;
+    clientMode: string;
+    role: string;
+    scopes: string[];
+    token: string;
+  }) => {
+    const identity = getDeviceIdentity();
+    const signedAt = Date.now();
+    const scopesStr = params.scopes.join(',');
+    const version = params.nonce ? 'v2' : 'v1';
+
+    const parts = [
+      version,
+      identity.deviceId,
+      params.clientId,
+      params.clientMode,
+      params.role,
+      scopesStr,
+      String(signedAt),
+      params.token || '',
+    ];
+    if (version === 'v2') parts.push(params.nonce || '');
+
+    const payload = parts.join('|');
+    const key = crypto.createPrivateKey(identity.privateKeyPem);
+    const signature = base64UrlEncode(crypto.sign(null, Buffer.from(payload, 'utf8'), key));
+
+    return {
+      deviceId: identity.deviceId,
+      publicKey: identity.publicKeyRawB64Url,
+      signature,
+      signedAt,
+      nonce: params.nonce,
+    };
+  })
 
   // ── Memory: Local Files ──
   ipcMain.handle('memory:browse', async () => {
@@ -389,23 +684,61 @@ function setupIPC(): void {
   });
 
   // ── Screenshot ──
+
+  // Native PowerShell screen capture — reliable on all Windows setups
+  const captureScreenPowerShell = (): string | null => {
+    const pngPath = path.join(app.getPath('temp'), `aegis-ss-${Date.now()}.png`);
+    try {
+      const script = [
+        'Add-Type -AssemblyName System.Windows.Forms',
+        'Add-Type -AssemblyName System.Drawing',
+        '$bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds',
+        '$bmp = New-Object System.Drawing.Bitmap($bounds.Width, $bounds.Height)',
+        '$g = [System.Drawing.Graphics]::FromImage($bmp)',
+        '$g.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size)',
+        `$bmp.Save('${pngPath}')`,
+        '$g.Dispose()',
+        '$bmp.Dispose()',
+      ].join('; ');
+
+      execFileSync('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', script], {
+        windowsHide: true,
+        timeout: 10000,
+      });
+
+      const imgData = fs.readFileSync(pngPath);
+      const dataUrl = `data:image/png;base64,${imgData.toString('base64')}`;
+      try { fs.unlinkSync(pngPath); } catch {}
+      return dataUrl;
+    } catch (err: any) {
+      console.error('[Screenshot] PowerShell capture failed:', err.message);
+      try { fs.unlinkSync(pngPath); } catch {}
+      return null;
+    }
+  };
+
   ipcMain.handle('screenshot:capture', async () => {
     try {
       // Minimize AEGIS for clean screen capture
       const wasVisible = mainWindow!.isVisible() && !mainWindow!.isMinimized();
       if (wasVisible) mainWindow!.minimize();
-      await new Promise((r) => setTimeout(r, 400));
+      await new Promise((r) => setTimeout(r, 500));
 
+      // Try PowerShell native capture first (most reliable)
+      const psResult = captureScreenPowerShell();
+      if (psResult) {
+        if (wasVisible) { mainWindow!.restore(); mainWindow!.focus(); }
+        return { success: true, data: psResult };
+      }
+
+      // Fallback to desktopCapturer
+      console.log('[Screenshot] PowerShell failed, trying desktopCapturer...');
       const sources = await desktopCapturer.getSources({
         types: ['screen'],
         thumbnailSize: { width: 1920, height: 1080 },
       });
 
-      // Restore AEGIS
-      if (wasVisible) {
-        mainWindow!.restore();
-        mainWindow!.focus();
-      }
+      if (wasVisible) { mainWindow!.restore(); mainWindow!.focus(); }
 
       if (sources.length > 0) {
         return { success: true, data: sources[0].thumbnail.toDataURL() };
@@ -451,12 +784,24 @@ function setupIPC(): void {
         return { success: true, data: img.toDataURL() };
       }
 
-      // For screen sources — capture at full resolution
+      // For screen sources — use PowerShell (reliable) with desktopCapturer fallback
       if (windowId.startsWith('screen:')) {
+        const wasVisible = mainWindow!.isVisible() && !mainWindow!.isMinimized();
+        if (wasVisible) mainWindow!.minimize();
+        await new Promise((r) => setTimeout(r, 500));
+
+        const psResult = captureScreenPowerShell();
+        if (psResult) {
+          if (wasVisible) { mainWindow!.restore(); mainWindow!.focus(); }
+          return { success: true, data: psResult };
+        }
+
+        // Fallback to desktopCapturer
         const sources = await desktopCapturer.getSources({
           types: ['screen'],
           thumbnailSize: { width: 1920, height: 1080 },
         });
+        if (wasVisible) { mainWindow!.restore(); mainWindow!.focus(); }
         const source = sources.find((s) => s.id === windowId);
         if (source) {
           return { success: true, data: source.thumbnail.toDataURL() };
@@ -508,10 +853,33 @@ function setupIPC(): void {
       const data = fs.readFileSync(filePath);
       const ext = path.extname(filePath).toLowerCase();
       const mimeMap: Record<string, string> = {
+        // Images
         '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png',
         '.gif': 'image/gif', '.webp': 'image/webp', '.svg': 'image/svg+xml',
-        '.pdf': 'application/pdf', '.mp3': 'audio/mpeg', '.wav': 'audio/wav',
-        '.ogg': 'audio/ogg', '.mp4': 'video/mp4',
+        '.bmp': 'image/bmp', '.ico': 'image/x-icon',
+        // Documents
+        '.pdf': 'application/pdf',
+        '.txt': 'text/plain', '.md': 'text/markdown', '.csv': 'text/csv',
+        '.json': 'application/json', '.xml': 'application/xml',
+        '.html': 'text/html', '.htm': 'text/html',
+        '.doc': 'application/msword',
+        '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        '.xls': 'application/vnd.ms-excel',
+        '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        '.ppt': 'application/vnd.ms-powerpoint',
+        '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        // Audio
+        '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.ogg': 'audio/ogg',
+        '.m4a': 'audio/mp4', '.flac': 'audio/flac', '.webm': 'audio/webm',
+        // Video
+        '.mp4': 'video/mp4', '.mkv': 'video/x-matroska', '.avi': 'video/x-msvideo',
+        // Archives
+        '.zip': 'application/zip', '.rar': 'application/x-rar-compressed',
+        '.7z': 'application/x-7z-compressed', '.tar': 'application/x-tar',
+        '.gz': 'application/gzip',
+        // Code
+        '.js': 'text/javascript', '.ts': 'text/typescript', '.py': 'text/x-python',
+        '.css': 'text/css', '.log': 'text/plain',
       };
       const isImage = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'].includes(ext);
       return {
@@ -643,4 +1011,5 @@ app.on('before-quit', () => {
   (app as any).isQuitting = true;
 });
 
-console.log('🛡️ AEGIS Desktop v4.0 started');
+console.log('🛡️ AEGIS Desktop v5.0 started');
+

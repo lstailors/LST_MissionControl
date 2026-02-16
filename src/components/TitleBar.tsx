@@ -29,52 +29,12 @@ export function TitleBar() {
   const maxK = Math.round(maxTokens / 1000);
 
   return (
-    <div className="drag-region h-[38px] flex items-center justify-between chrome-bg border-b border-aegis-border select-none shrink-0 relative z-10">
+    <div dir="ltr" className="drag-region h-[38px] flex items-center justify-between chrome-bg border-b border-aegis-border select-none shrink-0 relative z-10">
 
-      {/* ── Left: Glass Pill Controls + Brand ── */}
-      <div className="no-drag flex items-center gap-3 px-4">
-        {/* Glass pill buttons */}
-        <div className="flex items-center gap-1">
-          <button
-            onClick={handleClose}
-            className="w-[32px] h-[22px] rounded-[11px] flex items-center justify-center text-[12px] leading-none transition-all duration-[250ms]"
-            style={{
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              color: 'rgba(255,255,255,0.3)',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,80,80,0.2)'; e.currentTarget.style.borderColor = 'rgba(255,80,80,0.3)'; e.currentTarget.style.color = '#ff5050'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.3)'; }}
-            title={t('titlebar.close')}
-          >✕</button>
-          <button
-            onClick={handleMaximize}
-            className="w-[32px] h-[22px] rounded-[11px] flex items-center justify-center text-[10px] leading-none transition-all duration-[250ms]"
-            style={{
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              color: 'rgba(255,255,255,0.3)',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(78,201,176,0.15)'; e.currentTarget.style.borderColor = 'rgba(78,201,176,0.3)'; e.currentTarget.style.color = '#4EC9B0'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.3)'; }}
-            title={isMaximized ? t('titlebar.restore') : t('titlebar.maximize')}
-          >□</button>
-          <button
-            onClick={handleMinimize}
-            className="w-[32px] h-[22px] rounded-[11px] flex items-center justify-center text-[12px] leading-none transition-all duration-[250ms]"
-            style={{
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              color: 'rgba(255,255,255,0.3)',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.3)'; }}
-            title={t('titlebar.minimize')}
-          >─</button>
-        </div>
-
+      {/* ── Left: Brand + Model + Tokens + Status ── */}
+      <div className="flex items-center gap-4 px-4">
         {/* Brand */}
-        <div className="flex items-center gap-2 mr-2">
+        <div className="flex items-center gap-2">
           <span className="text-[12px] font-bold text-white/50 tracking-[2px]">
             AEGIS
           </span>
@@ -82,10 +42,9 @@ export function TitleBar() {
             DESKTOP
           </span>
         </div>
-      </div>
 
-      {/* ── Right: Model + Tokens + Status ── */}
-      <div className="flex items-center gap-4 px-4 text-[11px] text-white/25 font-mono">
+        {/* Model + Tokens + Status */}
+        <div className="flex items-center gap-4 text-[11px] text-white/25 font-mono">
         <span>Opus 4.6</span>
         <span className="text-white/10">·</span>
         <span>{usedK}K / {maxK}K</span>
@@ -100,6 +59,47 @@ export function TitleBar() {
           )} />
           {connected ? 'Connected' : connecting ? 'Connecting...' : 'Disconnected'}
         </span>
+        </div>
+      </div>
+
+      {/* ── Right: Window Controls (Windows style: ─ □ ✕) ── */}
+      <div className="no-drag flex items-center gap-1 px-4">
+        <button
+          onClick={handleMinimize}
+          className="w-[32px] h-[22px] rounded-[11px] flex items-center justify-center text-[12px] leading-none transition-all duration-[250ms]"
+          style={{
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            color: 'rgba(255,255,255,0.3)',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.3)'; }}
+          title={t('titlebar.minimize')}
+        >─</button>
+        <button
+          onClick={handleMaximize}
+          className="w-[32px] h-[22px] rounded-[11px] flex items-center justify-center text-[10px] leading-none transition-all duration-[250ms]"
+          style={{
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            color: 'rgba(255,255,255,0.3)',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(78,201,176,0.15)'; e.currentTarget.style.borderColor = 'rgba(78,201,176,0.3)'; e.currentTarget.style.color = '#4EC9B0'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.3)'; }}
+          title={isMaximized ? t('titlebar.restore') : t('titlebar.maximize')}
+        >□</button>
+        <button
+          onClick={handleClose}
+          className="w-[32px] h-[22px] rounded-[11px] flex items-center justify-center text-[12px] leading-none transition-all duration-[250ms]"
+          style={{
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            color: 'rgba(255,255,255,0.3)',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,80,80,0.2)'; e.currentTarget.style.borderColor = 'rgba(255,80,80,0.3)'; e.currentTarget.style.color = '#ff5050'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.3)'; }}
+          title={t('titlebar.close')}
+        >✕</button>
       </div>
     </div>
   );

@@ -21,6 +21,7 @@ interface PendingFile {
   isImage: boolean;
   size: number;
   preview?: string;
+  path?: string;  // Windows path — non-image files send path instead of base64
 }
 
 export function MessageInput() {
@@ -59,19 +60,38 @@ export function MessageInput() {
     if ((!trimmed && files.length === 0) || isSending || !connected) return;
     setIsSending(true);
 
-    const userAttachments = files
-      .filter((f) => f.isImage && f.preview)
+    // Separate: images → base64 attachments, non-images → path in message text
+    const imageFiles = files.filter((f) => f.isImage);
+    const nonImageFiles = files.filter((f) => !f.isImage);
+
+    const userAttachments = imageFiles
+      .filter((f) => f.preview)
       .map((f) => ({ mimeType: f.mimeType, content: f.preview!, fileName: f.name }));
+
+    // Build file path references for non-image files
+    const filePathRefs = nonImageFiles
+      .map((f) => `📎 file: ${f.path} (${f.mimeType}, ${formatSize(f.size)})`)
+      .join('\n');
+
+    // Combine user text + file paths
+    let fullMessage = trimmed;
+    if (filePathRefs) {
+      fullMessage = fullMessage ? `${fullMessage}\n\n${filePathRefs}` : filePathRefs;
+    }
+    if (!fullMessage && imageFiles.length > 0) {
+      fullMessage = `📎 ${imageFiles.map((f) => f.name).join(', ')}`;
+    }
 
     const userMsg = {
       id: `user-${Date.now()}`, role: 'user' as const,
-      content: trimmed || (files.length > 0 ? `📎 ${files.map((f) => f.name).join(', ')}` : ''),
+      content: fullMessage || '',
       timestamp: new Date().toISOString(),
       ...(userAttachments.length > 0 ? { attachments: userAttachments } : {}),
     };
     addMessage(userMsg);
 
-    const attachments = files.map((f) => ({
+    // Only send image files as base64 attachments
+    const attachments = imageFiles.map((f) => ({
       type: 'base64', mimeType: f.mimeType, content: f.base64, fileName: f.name,
     }));
 
@@ -80,8 +100,7 @@ export function MessageInput() {
     setIsTyping(true);
 
     try {
-      const messageText = trimmed || (attachments.length > 0 ? `📎 ${files.map((f) => f.name).join(', ')}` : '');
-      await gateway.sendMessage(messageText, attachments.length > 0 ? attachments : undefined, activeSessionKey);
+      await gateway.sendMessage(fullMessage || '', attachments.length > 0 ? attachments : undefined, activeSessionKey);
     } catch (err) {
       console.error('[Send] Error:', err);
     } finally {
@@ -93,7 +112,19 @@ export function MessageInput() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
 
-  const isImageMime = (mime: string) => mime.startsWith('image/');
+  // File type icon based on MIME type
+  const getFileIcon = (mimeType: string): string => {
+    if (mimeType.startsWith('image/')) return '🖼️';
+    if (mimeType === 'application/pdf') return '📕';
+    if (mimeType.startsWith('text/csv') || mimeType.includes('spreadsheet')) return '📊';
+    if (mimeType.startsWith('text/')) return '📝';
+    if (mimeType.includes('wordprocessing') || mimeType.includes('msword')) return '📘';
+    if (mimeType.includes('presentation') || mimeType.includes('powerpoint')) return '📙';
+    if (mimeType.includes('zip') || mimeType.includes('compressed') || mimeType.includes('archive')) return '📦';
+    if (mimeType.startsWith('audio/')) return '🎵';
+    if (mimeType.startsWith('video/')) return '🎬';
+    return '📄';
+  };
 
   const handleFileSelect = async () => {
     const result = await window.aegis?.file.openDialog();
@@ -101,14 +132,14 @@ export function MessageInput() {
     for (const filePath of result.filePaths) {
       const file = await window.aegis.file.read(filePath);
       if (file) {
-        if (!isImageMime(file.mimeType)) {
-          alert(t('input.imageOnly') + `\n\n"${file.name}" (${file.mimeType})`);
-          continue;
-        }
+        const isImage = file.mimeType?.startsWith('image/') ?? false;
         setFiles((prev) => [...prev, {
-          name: file.name, base64: file.base64, mimeType: file.mimeType,
-          isImage: file.isImage, size: file.size,
-          preview: file.isImage ? `data:${file.mimeType};base64,${file.base64}` : undefined,
+          name: file.name,
+          base64: isImage ? file.base64 : '',  // Only store base64 for images
+          mimeType: file.mimeType,
+          isImage, size: file.size,
+          preview: isImage ? `data:${file.mimeType};base64,${file.base64}` : undefined,
+          path: filePath,  // Store original Windows path
         }]);
       }
     }
@@ -175,17 +206,29 @@ export function MessageInput() {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     for (const file of Array.from(e.dataTransfer.files)) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const dataUrl = reader.result as string;
-        const base64 = dataUrl.replace(/^data:[^;]+;base64,/, '');
+      const isImage = file.type.startsWith('image/');
+      const filePath = (file as any).path || '';  // Electron adds .path to File objects
+
+      if (isImage) {
+        // Images: read base64 for preview + attachment
+        const reader = new FileReader();
+        reader.onload = () => {
+          const dataUrl = reader.result as string;
+          const base64 = dataUrl.replace(/^data:[^;]+;base64,/, '');
+          setFiles((prev) => [...prev, {
+            name: file.name, base64, mimeType: file.type,
+            isImage: true, size: file.size,
+            preview: dataUrl, path: filePath,
+          }]);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        // Non-images: store path only (no base64 needed)
         setFiles((prev) => [...prev, {
-          name: file.name, base64, mimeType: file.type || 'application/octet-stream',
-          isImage: file.type.startsWith('image/'), size: file.size,
-          preview: file.type.startsWith('image/') ? dataUrl : undefined,
+          name: file.name, base64: '', mimeType: file.type || 'application/octet-stream',
+          isImage: false, size: file.size, path: filePath,
         }]);
-      };
-      reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -208,7 +251,7 @@ export function MessageInput() {
                 <img src={file.preview} alt={file.name} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center p-1">
-                  <span className="text-xl">📄</span>
+                  <span className="text-xl">{getFileIcon(file.mimeType)}</span>
                   <span className="text-[8px] text-aegis-text-dim truncate w-full text-center mt-0.5">{file.name}</span>
                 </div>
               )}
@@ -244,7 +287,7 @@ export function MessageInput() {
               disabled={!connected}
             />
             {[
-              { icon: Paperclip, action: handleFileSelect, title: t('input.attachImage') },
+              { icon: Paperclip, action: handleFileSelect, title: t('input.attachFile') },
               { icon: Camera, action: () => setScreenshotOpen(true), title: t('input.screenshot') },
               { icon: Mic, action: () => setVoiceMode(true), title: t('input.voiceRecord'), disabled: !connected },
             ].map(({ icon: Icon, action, title, disabled }) => (
@@ -271,7 +314,7 @@ export function MessageInput() {
                 'focus:outline-none py-1.5 px-1',
                 'max-h-[180px] scrollbar-hidden'
               )}
-              dir="auto" rows={1} />
+              dir={dir} rows={1} />
 
             {/* Send / Stop Button */}
             {isTyping || isSending ? (

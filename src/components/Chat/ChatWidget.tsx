@@ -185,7 +185,7 @@ export function ChatWidget() {
                   key={msg.id}
                   className={clsx(
                     'max-w-[85%] px-3 py-2 rounded-xl text-[13px]',
-                    msg.role === 'user' ? 'ml-auto' : ''
+                    msg.role === 'user' ? 'ms-auto' : ''
                   )}
                   style={msg.role === 'user'
                     ? { background: 'rgba(78,201,176,0.12)', color: '#e6edf3' }

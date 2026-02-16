@@ -1,12 +1,120 @@
 import { memo, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Copy, Check, User, RotateCcw } from 'lucide-react';
+import { Copy, Check, User, RotateCcw, Eye, Code2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { getDirection } from '@/i18n';
 import { CodeBlock } from './CodeBlock';
+import { ChatImage } from './ChatImage';
+import { ChatVideo } from './ChatVideo';
 import { AudioPlayer } from './AudioPlayer';
 import type { ChatMessage } from '@/stores/chatStore';
 import clsx from 'clsx';
+
+// ── Artifact Parser ──
+interface ParsedArtifact {
+  type: string;
+  title: string;
+  content: string;
+}
+
+function parseArtifacts(text: string): { parts: Array<{ kind: 'text' | 'artifact'; text?: string; artifact?: ParsedArtifact }>} {
+  const regex = /<aegis_artifact\s+type="([^"]+)"\s+title="([^"]*)">([\s\S]*?)<\/aegis_artifact>/g;
+  const parts: Array<{ kind: 'text' | 'artifact'; text?: string; artifact?: ParsedArtifact }> = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = regex.exec(text)) !== null) {
+    // Text before artifact
+    if (match.index > lastIndex) {
+      const before = text.slice(lastIndex, match.index).trim();
+      if (before) parts.push({ kind: 'text', text: before });
+    }
+    // Artifact
+    parts.push({
+      kind: 'artifact',
+      artifact: {
+        type: match[1],
+        title: match[2],
+        content: match[3].trim(),
+      },
+    });
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Remaining text after last artifact
+  if (lastIndex < text.length) {
+    const remaining = text.slice(lastIndex).trim();
+    if (remaining) parts.push({ kind: 'text', text: remaining });
+  }
+
+  // No artifacts found — return full text
+  if (parts.length === 0) {
+    parts.push({ kind: 'text', text });
+  }
+
+  return { parts };
+}
+
+// ── Artifact Card Component ──
+function ArtifactCard({ artifact }: { artifact: ParsedArtifact }) {
+  const [opening, setOpening] = useState(false);
+
+  const typeIcons: Record<string, string> = {
+    html: '🌐', react: '⚛️', svg: '🎨', mermaid: '📊', code: '📝',
+  };
+
+  const handleOpen = async () => {
+    setOpening(true);
+    try {
+      await window.aegis?.artifact?.open(artifact);
+    } catch (err) {
+      console.error('[Artifact] Failed to open preview:', err);
+    } finally {
+      setTimeout(() => setOpening(false), 500);
+    }
+  };
+
+  return (
+    <div className="my-3 rounded-xl border border-aegis-primary/20 bg-aegis-primary/[0.04] overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-aegis-primary/10">
+        <div className="flex items-center gap-2.5">
+          <span className="text-lg">{typeIcons[artifact.type] || '📄'}</span>
+          <div>
+            <div className="text-[13px] font-medium text-aegis-text">{artifact.title}</div>
+            <div className="text-[10px] text-aegis-text-dim uppercase tracking-wider">{artifact.type}</div>
+          </div>
+        </div>
+        <button
+          onClick={handleOpen}
+          disabled={opening}
+          className={clsx(
+            'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all',
+            'bg-aegis-primary/15 text-aegis-primary hover:bg-aegis-primary/25',
+            'border border-aegis-primary/20 hover:border-aegis-primary/40',
+            opening && 'opacity-60'
+          )}
+        >
+          <Eye size={13} />
+          Preview
+        </button>
+      </div>
+      {/* Code preview (collapsed) */}
+      <details className="group">
+        <summary className="px-4 py-1.5 text-[11px] text-aegis-text-dim cursor-pointer hover:text-aegis-text-muted flex items-center gap-1.5 select-none">
+          <Code2 size={11} />
+          View source ({artifact.content.length} chars)
+        </summary>
+        <div className="px-4 pb-3 max-h-[200px] overflow-auto">
+          <pre className="text-[11px] text-aegis-text-dim font-mono whitespace-pre-wrap bg-black/20 rounded-lg p-3">
+            {artifact.content.slice(0, 2000)}{artifact.content.length > 2000 ? '\n...(truncated)' : ''}
+          </pre>
+        </div>
+      </details>
+    </div>
+  );
+}
 
 // ═══════════════════════════════════════════════════════════
 // Message Bubble — Colors fixed for dark theme visibility
@@ -17,12 +125,58 @@ interface MessageBubbleProps {
   onResend?: (content: string) => void;
 }
 
+// ── Shared Markdown Components ──
+const markdownComponents = {
+  code({ className, children, ...props }: any) {
+    const match = /language-(\w+)/.exec(className || '');
+    const codeString = String(children).replace(/\n$/, '');
+    if (match || codeString.includes('\n')) {
+      return <CodeBlock language={match?.[1] || ''} code={codeString} />;
+    }
+    return (
+      <code
+        className="text-[13px] font-mono px-1.5 py-0.5 rounded"
+        style={{ background: 'rgba(78, 201, 176, 0.12)', color: '#4EC9B0' }}
+        {...props}
+      >
+        {children}
+      </code>
+    );
+  },
+  img({ src, alt }: any) {
+    if (!src) return null;
+    // Check if it's a video by extension
+    const videoExtensions = /\.(mp4|webm|mov|avi|mkv|m4v|ogg)(\?.*)?$/i;
+    if (videoExtensions.test(src)) {
+      return <ChatVideo src={src} alt={alt} maxWidth="100%" maxHeight="400px" />;
+    }
+    return <ChatImage src={src} alt={alt} maxWidth="100%" maxHeight="400px" />;
+  },
+  a({ href, children }: any) {
+    // Check if link is a video
+    const videoExtensions = /\.(mp4|webm|mov|avi|mkv|m4v|ogg)(\?.*)?$/i;
+    if (href && videoExtensions.test(href)) {
+      return <ChatVideo src={href} alt={String(children) || 'video'} maxWidth="100%" maxHeight="400px" />;
+    }
+    return (
+      <a
+        href={href}
+        onClick={(e) => { e.preventDefault(); if (href) window.open(href, '_blank'); }}
+        className="text-[#4EC9B0] hover:text-[#3DB89F] underline underline-offset-2"
+      >
+        {children}
+      </a>
+    );
+  },
+};
+
 export const MessageBubble = memo(function MessageBubble({ message, onResend }: MessageBubbleProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [copied, setCopied] = useState(false);
   const [showActions, setShowActions] = useState(false);
   const isUser = message.role === 'user';
   const isStreaming = message.isStreaming;
+  const dir = getDirection(i18n.language);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(message.content);
@@ -73,7 +227,7 @@ export const MessageBubble = memo(function MessageBubble({ message, onResend }: 
         isUser ? 'flex-row-reverse' : '',
         !isUser && 'hover:bg-white/[0.015]'
       )}
-      dir="rtl"
+      dir={dir}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >
@@ -125,75 +279,47 @@ export const MessageBubble = memo(function MessageBubble({ message, onResend }: 
               {message.attachments
                 .filter((att) => att.mimeType?.startsWith('image/'))
                 .map((att, i) => (
-                  <img
+                  <ChatImage
                     key={i}
                     src={att.content}
                     alt={att.fileName || 'مرفق'}
-                    className="max-w-[280px] max-h-[200px] rounded-xl border border-white/[0.08] cursor-pointer hover:opacity-90 transition-all"
-                    loading="lazy"
-                    onClick={() => { if (att.content) window.open(att.content, '_blank'); }}
+                    maxWidth="280px"
+                    maxHeight="200px"
                   />
                 ))}
             </div>
           )}
 
           {isUser ? (
-            <p className="text-[14px] leading-relaxed text-aegis-text whitespace-pre-wrap">
-              {cleanContent}
-            </p>
+            <div className="markdown-body text-[14px] leading-relaxed text-aegis-text">
+              <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                {cleanContent}
+              </ReactMarkdown>
+            </div>
           ) : (
             <div className="markdown-body text-[14px] leading-relaxed text-aegis-text">
               {(() => {
+                // Check for artifacts in assistant messages
+                const hasArtifacts = cleanContent.includes('<aegis_artifact');
+                if (hasArtifacts) {
+                  const { parts } = parseArtifacts(cleanContent);
+                  return parts.map((part, idx) => {
+                    if (part.kind === 'artifact' && part.artifact) {
+                      return <ArtifactCard key={`art-${idx}`} artifact={part.artifact} />;
+                    }
+                    // Render text parts as markdown
+                    return (
+                      <ReactMarkdown key={`txt-${idx}`} remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                        {part.text || ''}
+                      </ReactMarkdown>
+                    );
+                  });
+                }
+
+                // Normal markdown rendering (no artifacts)
                 try {
                   return (
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      components={{
-                        code({ className, children, ...props }: any) {
-                          const match = /language-(\w+)/.exec(className || '');
-                          const codeString = String(children).replace(/\n$/, '');
-                          if (match || codeString.includes('\n')) {
-                            return <CodeBlock language={match?.[1] || ''} code={codeString} />;
-                          }
-                          // Inline code — teal tinted
-                          return (
-                            <code
-                              className="text-[13px] font-mono px-1.5 py-0.5 rounded"
-                              style={{ background: 'rgba(78, 201, 176, 0.12)', color: '#4EC9B0' }}
-                              {...props}
-                            >
-                              {children}
-                            </code>
-                          );
-                        },
-                        img({ src, alt }: any) {
-                          return (
-                            <div className="my-2">
-                              <img
-                                src={src}
-                                alt={alt || ''}
-                                className="max-w-full max-h-[400px] rounded-xl border border-white/[0.08] cursor-pointer hover:opacity-90 transition-all"
-                                loading="lazy"
-                                onClick={() => { if (src) window.open(src, '_blank'); }}
-                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                              />
-                              {alt && <span className="text-[11px] text-white/30 mt-1 block">{alt}</span>}
-                            </div>
-                          );
-                        },
-                        a({ href, children }: any) {
-                          return (
-                            <a
-                              href={href}
-                              onClick={(e) => { e.preventDefault(); if (href) window.open(href, '_blank'); }}
-                              className="text-[#4EC9B0] hover:text-[#3DB89F] underline underline-offset-2"
-                            >
-                              {children}
-                            </a>
-                          );
-                        },
-                      }}
-                    >
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
                       {cleanContent}
                     </ReactMarkdown>
                   );
