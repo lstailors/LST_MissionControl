@@ -14,10 +14,10 @@ A premium desktop client for [OpenClaw](https://github.com/openclaw/openclaw) �
 ## 📸 Screenshots
 
 ### 🎬 Chat
-<video src="screenshots/chat.mp4" controls width="100%"></video>
+![Chat Demo](screenshots/chat.gif)
 
 ### 🎬 Settings — Language Switch (RTL/LTR)
-<video src="screenshots/settings.mp4" controls width="100%"></video>
+![Settings Demo](screenshots/settings.gif)
 
 | Dashboard | Agent Hub |
 |:---------:|:---------:|
