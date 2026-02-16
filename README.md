@@ -13,21 +13,17 @@ A premium desktop client for [OpenClaw](https://github.com/openclaw/openclaw) �
 
 ## 📸 Screenshots
 
-| Dashboard | Chat |
-|:---------:|:----:|
-| ![Dashboard](screenshots/dashboard.png) | ![Chat](screenshots/chat.png) |
+| Dashboard | Agent Hub |
+|:---------:|:---------:|
+| ![Dashboard](screenshots/dashboard.png) | ![Agent Hub](screenshots/agent-hub.png) |
 
-| Agent Hub | Cron Monitor |
-|:---------:|:------------:|
-| ![Agent Hub](screenshots/agent-hub.png) | ![Cron Monitor](screenshots/cron-monitor.png) |
+| Cron Monitor | Cost Tracker |
+|:------------:|:------------:|
+| ![Cron Monitor](screenshots/cron-monitor.png) | ![Cost Tracker](screenshots/cost-tracker.png) |
 
-| Workshop (Kanban) | Cost Tracker |
-|:-----------------:|:------------:|
-| ![Workshop](screenshots/workshop.png) | ![Cost Tracker](screenshots/cost-tracker.png) |
-
-| Memory Explorer |
-|:---------------:|
-| ![Memory Explorer](screenshots/memory-explorer.png) |
+| Workshop (Kanban) | Memory Explorer |
+|:-----------------:|:---------------:|
+| ![Workshop](screenshots/workshop.png) | ![Memory Explorer](screenshots/memory-explorer.png) |
 
 ### 🎬 Video Demos
 
