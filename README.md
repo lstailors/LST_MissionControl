@@ -13,6 +13,12 @@ A premium desktop client for [OpenClaw](https://github.com/openclaw/openclaw) �
 
 ## 📸 Screenshots
 
+### 🎬 Chat
+<video src="screenshots/chat.mp4" controls width="100%"></video>
+
+### 🎬 Settings — Language Switch (RTL/LTR)
+<video src="screenshots/settings.mp4" controls width="100%"></video>
+
 | Dashboard | Agent Hub |
 |:---------:|:---------:|
 | ![Dashboard](screenshots/dashboard.png) | ![Agent Hub](screenshots/agent-hub.png) |
@@ -24,11 +30,6 @@ A premium desktop client for [OpenClaw](https://github.com/openclaw/openclaw) �
 | Workshop (Kanban) | Memory Explorer |
 |:-----------------:|:---------------:|
 | ![Workshop](screenshots/workshop.png) | ![Memory Explorer](screenshots/memory-explorer.png) |
-
-### 🎬 Video Demos
-
-- [Chat — streaming, images, video, artifacts](screenshots/chat.mp4)
-- [Settings — language switch, RTL/LTR](screenshots/settings.mp4)
 
 ---
 
