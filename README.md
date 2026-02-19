@@ -1,6 +1,10 @@
-# 🛡️ AEGIS Desktop v5.1 — Mission Control
+<div align="center">
+  <img src="https://raw.githubusercontent.com/openclaw/openclaw/main/ui/public/apple-touch-icon.png" width="96" alt="OpenClaw" />
+  <h1>AEGIS Desktop</h1>
+  <p><strong>Advanced Executive General Intelligence System</strong></p>
+</div>
 
-> **Advanced Executive General Intelligence System** — Your AI Command Center
+---
 
 ![Electron](https://img.shields.io/badge/Electron-34-47848F?logo=electron&logoColor=white)
 ![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)
