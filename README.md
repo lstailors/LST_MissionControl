@@ -315,4 +315,4 @@ npm run package:portable  # Portable exe
 
 ## 📄 License
 
-Private — not open source.
+[MIT](LICENSE) — free to use, modify, and distribute.
