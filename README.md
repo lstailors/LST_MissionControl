@@ -2,6 +2,7 @@
   <img src="https://raw.githubusercontent.com/openclaw/openclaw/main/ui/public/apple-touch-icon.png" width="96" alt="OpenClaw" />
   <h1>AEGIS Desktop</h1>
   <p><strong>Advanced Executive General Intelligence System</strong></p>
+  <p>The desktop client that turns your OpenClaw Gateway into a full mission control center.</p>
 </div>
 
 ---
@@ -11,7 +12,31 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)
 ![OpenClaw](https://img.shields.io/badge/OpenClaw-2026.2.17-blueviolet)
 
-A premium desktop client for [OpenClaw](https://github.com/openclaw/openclaw) — transforming your AI gateway into a full mission control center with real-time monitoring, multi-agent management, and full analytics.
+---
+
+## 🤔 Why AEGIS Desktop?
+
+OpenClaw is powerful — but managing it through a terminal or basic UI leaves a lot on the table. AEGIS Desktop gives it a proper home:
+
+- 💬 **Chat** — streaming responses, artifacts, images, voice, and multi-tab sessions
+- 📊 **Analytics** — see exactly what you're spending and where, broken down by model and agent
+- 🤖 **Agent Hub** — manage all your agents from a single panel
+- ⏰ **Cron Monitor** — schedule and control jobs visually
+- 🌍 **Bilingual** — full Arabic (RTL) and English (LTR) support out of the box
+
+If you run OpenClaw, AEGIS Desktop is the UI it deserves.
+
+---
+
+## 📋 Table of Contents
+
+- [Screenshots](#-screenshots)
+- [Features](#-features)
+- [What's New in v5.1](#-whats-new-in-v51)
+- [How It Works](#-how-it-works)
+- [Installation](#-installation)
+- [Development](#️-development)
+- [Tech Stack](#-tech-stack)
 
 ---
 
