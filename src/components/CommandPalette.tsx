@@ -10,6 +10,7 @@ import {
   Settings, Search, Wifi, WifiOff, Heart, Mail, Calendar, RefreshCw,
   Globe, Bell, BellOff, Command
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useChatStore } from '@/stores/chatStore';
 import { gateway } from '@/services/gateway';
@@ -28,51 +29,52 @@ interface PaletteCommand {
 
 export function CommandPalette() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { commandPaletteOpen, setCommandPaletteOpen, language, setLanguage, notificationsEnabled, setNotificationsEnabled } = useSettingsStore();
   const { connected } = useChatStore();
   const [query, setQuery] = useState('');
   const [selectedIdx, setSelectedIdx] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Define commands
+  // Define commands — all names use i18n keys
   const commands: PaletteCommand[] = [
     // Navigation
-    { id: 'nav-dashboard', icon: LayoutDashboard, name: 'لوحة التحكم', shortcut: 'Ctrl+1', keywords: ['dashboard', 'home', 'لوحة'], action: () => navigate('/') },
-    { id: 'nav-chat', icon: MessageCircle, name: 'المحادثة', shortcut: 'Ctrl+2', keywords: ['chat', 'شات', 'محادثة'], action: () => navigate('/chat') },
-    { id: 'nav-workshop', icon: Kanban, name: 'الورشة', shortcut: 'Ctrl+3', keywords: ['workshop', 'kanban', 'ورشة', 'مهام'], action: () => navigate('/workshop') },
-    { id: 'nav-costs', icon: DollarSign, name: 'التكاليف', shortcut: 'Ctrl+4', keywords: ['costs', 'تكاليف', 'tokens'], action: () => navigate('/costs') },
-    { id: 'nav-cron', icon: Clock, name: 'المهام المجدولة', shortcut: 'Ctrl+5', keywords: ['cron', 'schedule', 'جدولة'], action: () => navigate('/cron') },
-    { id: 'nav-agents', icon: Bot, name: 'الوكلاء', shortcut: 'Ctrl+6', keywords: ['agents', 'وكلاء', 'sessions'], action: () => navigate('/agents') },
-    { id: 'nav-memory', icon: Brain, name: 'الذاكرة', shortcut: 'Ctrl+7', keywords: ['memory', 'ذاكرة', 'search'], action: () => navigate('/memory') },
-    { id: 'nav-settings', icon: Settings, name: 'الإعدادات', shortcut: 'Ctrl+,', keywords: ['settings', 'إعدادات'], action: () => navigate('/settings') },
+    { id: 'nav-dashboard', icon: LayoutDashboard, name: t('nav.dashboard'), shortcut: 'Ctrl+1', keywords: ['dashboard', 'home', 'لوحة'], action: () => navigate('/') },
+    { id: 'nav-chat', icon: MessageCircle, name: t('nav.chat'), shortcut: 'Ctrl+2', keywords: ['chat', 'شات', 'محادثة'], action: () => navigate('/chat') },
+    { id: 'nav-workshop', icon: Kanban, name: t('nav.workshop'), shortcut: 'Ctrl+3', keywords: ['workshop', 'kanban', 'ورشة', 'مهام'], action: () => navigate('/workshop') },
+    { id: 'nav-costs', icon: DollarSign, name: t('nav.costs'), shortcut: 'Ctrl+4', keywords: ['costs', 'تكاليف', 'tokens'], action: () => navigate('/costs') },
+    { id: 'nav-cron', icon: Clock, name: t('nav.cron'), shortcut: 'Ctrl+5', keywords: ['cron', 'schedule', 'جدولة'], action: () => navigate('/cron') },
+    { id: 'nav-agents', icon: Bot, name: t('nav.agents'), shortcut: 'Ctrl+6', keywords: ['agents', 'وكلاء', 'sessions'], action: () => navigate('/agents') },
+    { id: 'nav-memory', icon: Brain, name: t('nav.memory'), shortcut: 'Ctrl+7', keywords: ['memory', 'ذاكرة', 'search'], action: () => navigate('/memory') },
+    { id: 'nav-settings', icon: Settings, name: t('nav.settings'), shortcut: 'Ctrl+,', keywords: ['settings', 'إعدادات'], action: () => navigate('/settings') },
 
     // Actions
-    { id: 'act-heartbeat', icon: Heart, name: 'فحص سريع (Heartbeat)', keywords: ['heartbeat', 'فحص', 'check'], action: () => {
+    { id: 'act-heartbeat', icon: Heart, name: t('palette.heartbeat'), keywords: ['heartbeat', 'فحص', 'check'], action: () => {
       window.dispatchEvent(new CustomEvent('aegis:quick-action', { detail: { message: 'Run a quick heartbeat check — emails, calendar, anything urgent?', autoSend: true } }));
     }},
-    { id: 'act-emails', icon: Mail, name: 'فحص الإيميلات', keywords: ['email', 'إيميل', 'بريد'], action: () => {
+    { id: 'act-emails', icon: Mail, name: t('palette.checkEmails'), keywords: ['email', 'إيميل', 'بريد'], action: () => {
       window.dispatchEvent(new CustomEvent('aegis:quick-action', { detail: { message: 'Check my unread emails and summarize anything important.', autoSend: true } }));
     }},
-    { id: 'act-calendar', icon: Calendar, name: 'فحص التقويم', keywords: ['calendar', 'تقويم', 'مواعيد'], action: () => {
+    { id: 'act-calendar', icon: Calendar, name: t('palette.checkCalendar'), keywords: ['calendar', 'تقويم', 'مواعيد'], action: () => {
       window.dispatchEvent(new CustomEvent('aegis:quick-action', { detail: { message: "What's on my calendar today and tomorrow?", autoSend: true } }));
     }},
-    { id: 'act-compact', icon: RefreshCw, name: 'ضغط السياق', keywords: ['compact', 'ضغط', 'context'], action: () => {
+    { id: 'act-compact', icon: RefreshCw, name: t('palette.compactContext'), keywords: ['compact', 'ضغط', 'context'], action: () => {
       window.dispatchEvent(new CustomEvent('aegis:quick-action', { detail: { message: 'Compact the main session context', autoSend: true } }));
     }},
 
     // Connection
-    { id: 'conn-reconnect', icon: connected ? Wifi : WifiOff, name: connected ? 'إعادة الاتصال' : 'اتصل بالـ Gateway', keywords: ['connect', 'reconnect', 'اتصال', 'gateway'], action: async () => {
+    { id: 'conn-reconnect', icon: connected ? Wifi : WifiOff, name: connected ? t('palette.reconnect') : t('palette.connectGateway'), keywords: ['connect', 'reconnect', 'اتصال', 'gateway'], action: async () => {
       const config = await window.aegis?.config?.get();
       gateway.connect(config?.gatewayUrl || 'ws://127.0.0.1:18789', config?.gatewayToken || '');
     }},
 
     // Settings
-    { id: 'set-lang', icon: Globe, name: language === 'ar' ? 'Switch to English' : 'تغيير للعربية', keywords: ['language', 'لغة', 'english', 'عربي'], action: () => {
+    { id: 'set-lang', icon: Globe, name: t('palette.toggleLanguage'), keywords: ['language', 'لغة', 'english', 'عربي'], action: () => {
       const newLang = language === 'ar' ? 'en' : 'ar';
       setLanguage(newLang);
       changeLanguage(newLang);
     }},
-    { id: 'set-notif', icon: notificationsEnabled ? BellOff : Bell, name: notificationsEnabled ? 'إيقاف الإشعارات' : 'تفعيل الإشعارات', keywords: ['notifications', 'إشعارات'], action: () => {
+    { id: 'set-notif', icon: notificationsEnabled ? BellOff : Bell, name: t('palette.toggleNotifications'), keywords: ['notifications', 'إشعارات'], action: () => {
       setNotificationsEnabled(!notificationsEnabled);
     }},
   ];
@@ -141,7 +143,7 @@ export function CommandPalette() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="ابحث عن أمر..."
+              placeholder={t('palette.searchPlaceholder')}
               className="flex-1 bg-transparent text-[15px] text-aegis-text placeholder:text-aegis-text-dim/40 focus:outline-none"
               dir="auto"
             />

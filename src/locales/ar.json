@@ -227,5 +227,17 @@
   },
   "audio": {
     "loadError": "⚠️ تعذر تحميل الملف الصوتي"
+  },
+  "palette": {
+    "heartbeat": "فحص سريع (Heartbeat)",
+    "checkEmails": "فحص الإيميلات",
+    "checkCalendar": "فحص التقويم",
+    "compactContext": "ضغط السياق",
+    "reconnect": "إعادة الاتصال",
+    "connectGateway": "اتصل بالـ Gateway",
+    "toggleTheme": "تغيير المظهر",
+    "toggleLanguage": "Switch to English",
+    "toggleNotifications": "تبديل التنبيهات",
+    "searchPlaceholder": "ابحث في الأوامر..."
   }
 }

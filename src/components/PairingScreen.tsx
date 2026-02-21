@@ -31,6 +31,8 @@ export function PairingScreen({ gatewayHttpUrl, onPaired, onCancel, errorMessage
   const [code, setCode] = useState<string>('');
   const [deviceId, setDeviceId] = useState<string>('');
   const [error, setError] = useState<string>('');
+  const [showManualToken, setShowManualToken] = useState(false);
+  const [manualToken, setManualToken] = useState('');
   const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const mountedRef = useRef(true);
 
@@ -80,7 +82,12 @@ export function PairingScreen({ gatewayHttpUrl, onPaired, onCancel, errorMessage
             scopes: ['operator.read', 'operator.write', 'operator.admin'],
           }),
         });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) {
+          if (res.status === 405) {
+            throw new Error('Gateway does not support pairing. Please update OpenClaw to v2026.2.19 or later.');
+          }
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
         result = await res.json();
       }
 
@@ -315,6 +322,52 @@ export function PairingScreen({ gatewayHttpUrl, onPaired, onCancel, errorMessage
             )}
           </div>
         </div>
+
+        {/* Manual Token Entry — fallback when auto-pairing fails */}
+        {(state === 'error' || showManualToken) && (
+          <div className="px-8 pb-4">
+            <div className="border-t border-[#1e1e30] pt-4">
+              {!showManualToken ? (
+                <button
+                  onClick={() => setShowManualToken(true)}
+                  className="text-xs text-aegis-primary hover:text-aegis-accent transition-colors w-full text-center"
+                >
+                  {isRTL ? 'أدخل Token يدوياً' : 'Enter token manually'}
+                </button>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-xs text-gray-400 text-center">
+                    {isRTL
+                      ? 'أدخل الـ Gateway Token من إعدادات OpenClaw:'
+                      : 'Enter your Gateway token from OpenClaw config:'}
+                  </p>
+                  <input
+                    type="password"
+                    value={manualToken}
+                    onChange={(e) => setManualToken(e.target.value)}
+                    placeholder={isRTL ? 'الصق الـ Token هنا...' : 'Paste token here...'}
+                    className="w-full px-3 py-2 rounded-lg bg-[#0a0a14] border border-[#2a2a3e] text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-aegis-primary"
+                    dir="ltr"
+                  />
+                  <button
+                    onClick={async () => {
+                      if (!manualToken.trim()) return;
+                      if (window.aegis?.pairing?.saveToken) {
+                        await window.aegis.pairing.saveToken(manualToken.trim());
+                      }
+                      setState('approved');
+                      setTimeout(() => onPaired(manualToken.trim()), 800);
+                    }}
+                    disabled={!manualToken.trim()}
+                    className="w-full py-2 rounded-xl bg-aegis-primary hover:bg-[#3db89f] text-black font-semibold text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    {isRTL ? 'اتصل' : 'Connect'}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Bottom info */}
         <div className="px-8 pb-6">

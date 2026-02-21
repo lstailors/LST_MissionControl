@@ -442,6 +442,9 @@ function setupIPC(): void {
       });
       if (!res.ok) {
         const body = await res.text();
+        if (res.status === 405) {
+          throw new Error('Gateway does not support pairing API. Make sure OpenClaw v2026.2.19+ is running and the Gateway is started.');
+        }
         throw new Error(`HTTP ${res.status}: ${body}`);
       }
       return await res.json();

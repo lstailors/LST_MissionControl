@@ -260,5 +260,17 @@
   },
   "audio": {
     "loadError": "⚠️ Failed to load audio file"
+  },
+  "palette": {
+    "heartbeat": "Quick Check (Heartbeat)",
+    "checkEmails": "Check Emails",
+    "checkCalendar": "Check Calendar",
+    "compactContext": "Compact Context",
+    "reconnect": "Reconnect",
+    "connectGateway": "Connect to Gateway",
+    "toggleTheme": "Toggle Theme",
+    "toggleLanguage": "Switch to Arabic",
+    "toggleNotifications": "Toggle Notifications",
+    "searchPlaceholder": "Search commands..."
   }
 }
