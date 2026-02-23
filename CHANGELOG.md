@@ -19,6 +19,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 - **Close code 1008** — WebSocket close with code 1008 now correctly detected as pairing-required, triggering the auto-pairing flow
 - **Unreachable theme code** — theme initialization in App.tsx was placed after an early `return` statement and never executed; moved before cleanup return
 - **Orphan WebSocket** — added `gateway.disconnect()` to useEffect cleanup, preventing duplicate connections on component remount
+- **Installer language not applied** — selected language now flows from NSIS → main process → preload → renderer synchronously before first render
+- **Duplicate language dialog** — removed redundant `MUI_LANGDLL_DISPLAY`; electron-builder handles it automatically
+- **Language persistence across reinstalls** — version-aware detection respects installer language choice even with existing localStorage
+- **Default language** — English is now the default; users can switch to Arabic from Settings
 
 ### Added
 - **Cron delivery status** — Cron Monitor now shows separate run status and delivery status badges (Gateway 2026.2.22+ splits `lastRunStatus` from `lastDeliveryStatus`)
