@@ -1,7 +1,7 @@
 {
   "name": "ls-mission-control",
   "version": "5.4.0",
-  "description": "Mission Control dashboard for L&S Custom Tailors",
+  "description": "L&S Mission Control — AI Operations Dashboard for L&S Custom Tailors",
   "main": "dist-electron/main.js",
   "author": "Rashed",
   "license": "MIT",
@@ -100,8 +100,7 @@
       "unicode": true,
       "include": "installer/nsis-script.nsh",
       "installerLanguages": [
-        "en_US",
-        "ar_SA"
+        "en_US"
       ]
     },
     "directories": {

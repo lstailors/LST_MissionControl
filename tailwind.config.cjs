@@ -64,9 +64,9 @@ module.exports = {
       },
       fontFamily: {
         serif: ['Playfair Display', 'Georgia', 'serif'],
-        'serif-sc': ['Playfair Display SC', 'Playfair Display', 'Georgia', 'serif'],
-        sans: ['DM Sans', 'SF Pro Display', 'Segoe UI', 'system-ui', 'sans-serif'],
-        mono: ['IBM Plex Mono', 'SF Mono', 'Fira Code', 'Consolas', 'monospace'],
+        'serif-sc': ['Playfair Display SC', 'Georgia', 'serif'],
+        sans: ['DM Sans', 'system-ui', 'sans-serif'],
+        mono: ['IBM Plex Mono', 'monospace'],
       },
       boxShadow: {
         'glow-sm': '0 0 12px rgb(var(--aegis-primary) / 0.18)',
