@@ -12,6 +12,13 @@ import { MemoryExplorerPage } from '@/pages/MemoryExplorer';
 import { SkillsPage as SkillsPageFull } from '@/pages/SkillsPage';
 import { TerminalPage } from '@/pages/TerminalPage';
 import { SettingsPageFull } from '@/pages/SettingsPage';
+import { OrchestratorPage } from '@/pages/Orchestrator';
+import { BriefPage } from '@/pages/Brief';
+import { DecisionsPage } from '@/pages/Decisions';
+import { IntelligencePage } from '@/pages/Intelligence';
+import { CommsPage } from '@/pages/Comms';
+import { VaultPage } from '@/pages/Vault';
+import { EventsPage } from '@/pages/Events';
 import { PairingScreen } from '@/components/PairingScreen';
 import { ToastContainer } from '@/components/Toast/ToastContainer';
 import { useChatStore } from '@/stores/chatStore';
@@ -312,6 +319,13 @@ export default function App() {
             <Route path="/" element={<DashboardPage />} />
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/workshop" element={<WorkshopPage />} />
+            <Route path="/orchestrator" element={<OrchestratorPage />} />
+            <Route path="/brief" element={<BriefPage />} />
+            <Route path="/decisions" element={<DecisionsPage />} />
+            <Route path="/intelligence" element={<IntelligencePage />} />
+            <Route path="/comms" element={<CommsPage />} />
+            <Route path="/vault" element={<VaultPage />} />
+            <Route path="/events" element={<EventsPage />} />
             <Route path="/costs" element={<FullAnalyticsPage />} />
             <Route path="/analytics" element={<FullAnalyticsPage />} />
             <Route path="/cron" element={<CronMonitorPage />} />
