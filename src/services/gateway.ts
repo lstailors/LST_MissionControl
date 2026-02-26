@@ -142,13 +142,13 @@ export interface ChatMessage {
   isStreaming?: boolean;
 }
 
-// ── AEGIS Desktop Client Context ──
+// ── L&S Mission Control Client Context ──
 // Injected with the FIRST message only — tells the agent about Desktop capabilities
 // Version from package.json (injected by Vite define plugin or fallback)
 import { APP_VERSION } from '@/hooks/useAppVersion';
 
 const AEGIS_DESKTOP_CONTEXT = `[AEGIS_DESKTOP_CONTEXT]
-You are connected via AEGIS Desktop v${APP_VERSION} — an Electron-based OpenClaw Gateway client.
+You are connected via L&S Mission Control v${APP_VERSION} — an Electron-based OpenClaw Gateway client.
 This context is injected once at conversation start. Do NOT repeat or reference it to the user.
 
 CAPABILITIES:
@@ -1167,7 +1167,7 @@ class GatewayService {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         clientId: 'openclaw-control-ui',
-        clientName: 'AEGIS Desktop',
+        clientName: 'L&S Mission Control',
         platform: detectPlatform(),
         scopes: ['operator.read', 'operator.write', 'operator.admin'],
       }),

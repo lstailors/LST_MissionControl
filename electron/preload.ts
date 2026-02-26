@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
 // ═══════════════════════════════════════════════════════════
-// AEGIS Desktop — Preload Bridge
+// L&S Mission Control — Preload Bridge
 // ═══════════════════════════════════════════════════════════
 
 // Read installer language from process.argv (passed via additionalArguments in main.ts)
@@ -178,4 +178,4 @@ contextBridge.exposeInMainWorld('aegis', api);
 // Type declaration for renderer
 export type AegisAPI = typeof api;
 
-console.log('🛡️ AEGIS Preload v5.4 ready');
+console.log('L&S Mission Control Preload v5.4 ready');

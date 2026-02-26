@@ -1,6 +1,6 @@
 ; ═══════════════════════════════════════════════════════════
-; AEGIS Desktop — Custom NSIS Installer Script
-; Advanced Executive General Intelligence System
+; L&S Mission Control — Custom NSIS Installer Script
+; Mission Control dashboard for L&S Custom Tailors
 ; ═══════════════════════════════════════════════════════════
 
 ; ── Language Selection ──
@@ -10,8 +10,8 @@
 
 ; ── Custom Welcome Page Text ──
 !macro customWelcomePage
-  !define MUI_WELCOMEPAGE_TITLE "AEGIS Desktop v${VERSION}"
-  !define MUI_WELCOMEPAGE_TEXT "Welcome to AEGIS Desktop Setup.$\r$\n$\r$\nAdvanced Executive General Intelligence System$\r$\n$\r$\nThis wizard will install AEGIS Desktop on your computer.$\r$\nIt is recommended to close all other applications before continuing.$\r$\n$\r$\nClick Next to continue."
+  !define MUI_WELCOMEPAGE_TITLE "L&S Mission Control v${VERSION}"
+  !define MUI_WELCOMEPAGE_TEXT "Welcome to L&S Mission Control Setup.$\r$\n$\r$\nMission Control dashboard for L&S Custom Tailors$\r$\n$\r$\nThis wizard will install L&S Mission Control on your computer.$\r$\nIt is recommended to close all other applications before continuing.$\r$\n$\r$\nClick Next to continue."
 !macroend
 
 ; ── Custom Install Actions ──
@@ -20,8 +20,8 @@
   CreateDirectory "$PROFILE\clawdbot-shared\voice"
 
   ; Write app info to registry
-  WriteRegStr SHCTX "Software\AEGIS Desktop" "InstallLocation" "$INSTDIR"
-  WriteRegStr SHCTX "Software\AEGIS Desktop" "Version" "${VERSION}"
+  WriteRegStr SHCTX "Software\LS Mission Control" "InstallLocation" "$INSTDIR"
+  WriteRegStr SHCTX "Software\LS Mission Control" "Version" "${VERSION}"
 
   ; Save selected language for the app to read on first launch
   ; Arabic = 1025, English = 1033
@@ -38,5 +38,5 @@
 
 ; ── Custom Uninstall Actions ──
 !macro customUnInstall
-  DeleteRegKey SHCTX "Software\AEGIS Desktop"
+  DeleteRegKey SHCTX "Software\LS Mission Control"
 !macroend

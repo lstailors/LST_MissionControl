@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════
 // ClarifyCard — Floating quick-reply card for clarifying questions
 //
-// Appears above MessageInput when AEGIS asks a question with
+// Appears above MessageInput when the agent asks a question with
 // numbered/bulleted options. User can click an option to auto-fill
 // the input, or type a custom answer.
 //

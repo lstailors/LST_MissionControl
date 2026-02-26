@@ -7,7 +7,7 @@ import { ChevronDown, Check } from 'lucide-react';
 import clsx from 'clsx';
 
 // ═══════════════════════════════════════════════════════════
-// Title Bar — Glass Pills window controls + AEGIS DESKTOP branding
+// Title Bar — Glass Pills window controls + L&S Mission Control branding
 // ═══════════════════════════════════════════════════════════
 
 /** Converts full model IDs to short display names.
@@ -410,10 +410,10 @@ export function TitleBar() {
         {/* Brand */}
         <div className="flex items-center gap-2">
           <span className="text-[12px] font-bold text-aegis-text-secondary tracking-[2px]">
-            AEGIS
+            L&S
           </span>
           <span className="text-[10px] text-aegis-text-dim tracking-[1px]">
-            DESKTOP
+            MISSION CONTROL
           </span>
           <VersionBadge />
         </div>

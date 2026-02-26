@@ -1,7 +1,7 @@
 {
   "app": {
-    "name": "AEGIS",
-    "fullName": "Advanced Executive General Intelligence System",
+    "name": "L&S Mission Control",
+    "fullName": "Mission Control dashboard for L&S Custom Tailors",
     "version": "v4"
   },
   "connection": {
@@ -58,7 +58,7 @@
     "viewAll": "عرض الكل",
     "noActiveSessions": "لا توجد جلسات نشطة",
     "notConnected": "غير متصل بالـ Gateway",
-    "commandCenter": "مركز قيادة AEGIS",
+    "commandCenter": "مركز قيادة L&S",
     "connected": "متصل · يعمل",
     "uptime": "وقت التشغيل",
     "version": "الإصدار",
@@ -157,7 +157,7 @@
   },
   "memory": {
     "title": "مستكشف الذاكرة",
-    "subtitle": "ابحث في ذاكرة AEGIS — 283 ذكرى و13,000+ رسالة",
+    "subtitle": "ابحث في الذاكرة — 283 ذكرى و13,000+ رسالة",
     "searchPlaceholder": "ابحث في الذاكرة...",
     "search": "بحث",
     "totalMemories": "الذكريات",
@@ -181,7 +181,7 @@
     "soundDesc": "تشغيل صوت عند وصول تنبيه",
     "dnd": "عدم الإزعاج",
     "dndDesc": "إيقاف جميع التنبيهات مؤقتاً",
-    "testNotification": "هذا تنبيه تجريبي من AEGIS!",
+    "testNotification": "هذا تنبيه تجريبي من L&S Mission Control!",
     "testSound": "تجربة التنبيه",
     "gatewayUrl": "Gateway WebSocket URL",
     "gatewayToken": "Gateway Token",
@@ -209,7 +209,7 @@
     "quickChat": "محادثة سريعة",
     "openFullChat": "فتح المحادثة الكاملة",
     "typeMessage": "اكتب رسالتك...",
-    "widgetPlaceholder": "اسأل AEGIS أي شي...",
+    "widgetPlaceholder": "اسأل أي شي...",
     "sendError": "حدث خطأ في الإرسال",
     "messageCount": "{{count}} رسالة",
     "refresh": "تحديث",
@@ -283,7 +283,7 @@
     "connected": "متصل",
     "connectedBody": "تم الاتصال بالـ Gateway بنجاح",
     "paired": "تم الربط",
-    "pairedBody": "تم ربط AEGIS Desktop بالـ Gateway بنجاح"
+    "pairedBody": "تم ربط L&S Mission Control بالـ Gateway بنجاح"
   },
   "token": {
     "lastUpdate": "آخر تحديث",
@@ -370,7 +370,7 @@
     "enterTokenDesc": "أدخل الـ Gateway Token من إعدادات OpenClaw:",
     "pasteToken": "الصق الـ Token هنا...",
     "connect": "اتصل",
-    "tokenExplanation": "يحتاج AEGIS Desktop إلى token صالح للاتصال بـ OpenClaw Gateway. هذا الربط يتم مرة واحدة فقط."
+    "tokenExplanation": "يحتاج L&S Mission Control إلى token صالح للاتصال بـ OpenClaw Gateway. هذا الربط يتم مرة واحدة فقط."
   },
   "settingsExtra": {
     "theme": "المظهر",

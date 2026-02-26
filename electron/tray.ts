@@ -16,7 +16,7 @@ export function createTray(mainWindow: BrowserWindow, app: App): Tray {
 
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: '🛡️ فتح AEGIS',
+      label: 'فتح L&S Mission Control',
       click: () => {
         mainWindow.show();
         mainWindow.focus();
@@ -32,7 +32,7 @@ export function createTray(mainWindow: BrowserWindow, app: App): Tray {
     },
   ]);
 
-  tray.setToolTip('AEGIS Desktop');
+  tray.setToolTip('L&S Mission Control');
   tray.setContextMenu(contextMenu);
   tray.on('double-click', () => {
     mainWindow.show();

@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
 // ═══════════════════════════════════════════════════════════
-// AEGIS Preview Window — Preload Bridge
+// L&S Preview Window — Preload Bridge
 // Exposes artifact receiver + clipboard (sandboxed)
 // ═══════════════════════════════════════════════════════════
 

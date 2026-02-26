@@ -1,7 +1,7 @@
 {
   "app": {
-    "name": "AEGIS",
-    "fullName": "Advanced Executive General Intelligence System",
+    "name": "L&S Mission Control",
+    "fullName": "Mission Control dashboard for L&S Custom Tailors",
     "version": "v4"
   },
   "connection": {
@@ -62,7 +62,7 @@
     "health": "Health",
     "sessionSummary": "Session Summary",
     "systemStatus": "System Status",
-    "commandCenter": "AEGIS Command Center",
+    "commandCenter": "L&S Command Center",
     "connected": "Connected · Working",
     "uptime": "Uptime",
     "version": "Version",
@@ -166,7 +166,7 @@
   },
   "memory": {
     "title": "Memory Explorer",
-    "subtitle": "Search AEGIS memory — 283 memories & 13,000+ messages",
+    "subtitle": "Search memory — 283 memories & 13,000+ messages",
     "searchPlaceholder": "Search memory...",
     "search": "Search",
     "totalMemories": "Memories",
@@ -192,7 +192,7 @@
     "soundDesc": "Play sound on notification",
     "dnd": "Do Not Disturb",
     "dndDesc": "Temporarily mute all notifications",
-    "testNotification": "This is a test notification from AEGIS!",
+    "testNotification": "This is a test notification from L&S Mission Control!",
     "testSound": "Test Notification",
     "gatewayUrl": "Gateway WebSocket URL",
     "gatewayToken": "Gateway Token",
@@ -239,7 +239,7 @@
     "quickChat": "Quick Chat",
     "openFullChat": "Open Full Chat",
     "typeMessage": "Type a message...",
-    "widgetPlaceholder": "Ask AEGIS anything...",
+    "widgetPlaceholder": "Ask anything...",
     "sendError": "Failed to send message",
     "messageCount": "{{count}} messages",
     "refresh": "Refresh",
@@ -316,7 +316,7 @@
     "connected": "Connected",
     "connectedBody": "Successfully connected to Gateway",
     "paired": "Paired",
-    "pairedBody": "AEGIS Desktop successfully paired with Gateway"
+    "pairedBody": "L&S Mission Control successfully paired with Gateway"
   },
   "token": {
     "lastUpdate": "Last update",
@@ -403,7 +403,7 @@
     "enterTokenDesc": "Enter the Gateway Token from OpenClaw settings:",
     "pasteToken": "Paste token here...",
     "connect": "Connect",
-    "tokenExplanation": "AEGIS Desktop needs a valid token to connect to the OpenClaw Gateway. This pairing is done once only."
+    "tokenExplanation": "L&S Mission Control needs a valid token to connect to the OpenClaw Gateway. This pairing is done once only."
   },
   "settingsExtra": {
     "theme": "Theme",

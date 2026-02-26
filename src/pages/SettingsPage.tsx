@@ -269,7 +269,7 @@ export function SettingsPageFull() {
           </div>
 
           <button
-            onClick={() => notifications.notify({ type: 'info', title: 'AEGIS', body: t('settings.testNotification') })}
+            onClick={() => notifications.notify({ type: 'info', title: 'L&S Mission Control', body: t('settings.testNotification') })}
             className="text-[12px] px-4 py-2 rounded-xl border border-aegis-border/20 text-aegis-text-dim hover:text-aegis-text hover:border-aegis-border/40 transition-colors"
           >
             🔔 {t('settings.testSound')}
@@ -571,10 +571,10 @@ export function SettingsPageFull() {
       {/* About + System Info */}
       <GlassCard delay={0.3}>
         <div className="text-center py-4 mb-4">
-          <div className="text-3xl mb-2">🛡️</div>
-          <div className="text-[14px] font-bold text-aegis-text">AEGIS Desktop</div>
-          <div className="text-[12px] text-aegis-text-dim mt-1">v{APP_VERSION} — Mission Control</div>
-          <div className="text-[11px] text-aegis-text-dim mt-0.5">Advanced Executive General Intelligence System</div>
+          <div className="text-3xl mb-2">✂️</div>
+          <div className="text-[14px] font-bold text-aegis-text">L&S Mission Control</div>
+          <div className="text-[12px] text-aegis-text-dim mt-1">v{APP_VERSION} — Dashboard</div>
+          <div className="text-[11px] text-aegis-text-dim mt-0.5">Mission Control for L&S Custom Tailors</div>
         </div>
         <div className="space-y-2 border-t border-aegis-border/15 pt-3">
           {[
@@ -590,7 +590,7 @@ export function SettingsPageFull() {
           ))}
         </div>
         <button onClick={() => {
-          const info = `AEGIS Desktop v4.0.0\nPlatform: ${navigator.platform}\nModel: ${mainModel}\nGateway: ${connected ? 'connected' : 'disconnected'}`;
+          const info = `L&S Mission Control v${APP_VERSION}\nPlatform: ${navigator.platform}\nModel: ${mainModel}\nGateway: ${connected ? 'connected' : 'disconnected'}`;
           navigator.clipboard?.writeText(info);
         }}
           className="mt-3 flex items-center gap-1.5 mx-auto px-3 py-1.5 rounded-lg text-[11px] text-aegis-text-dim hover:text-aegis-text border border-aegis-border/20 hover:border-aegis-border/40 transition-colors">

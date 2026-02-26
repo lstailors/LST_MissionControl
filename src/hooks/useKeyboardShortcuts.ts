@@ -4,7 +4,7 @@ import { useSettingsStore } from '@/stores/settingsStore';
 import { useChatStore } from '@/stores/chatStore';
 
 // ═══════════════════════════════════════════════════════════
-// Keyboard Shortcuts — Global hotkeys for AEGIS Desktop
+// Keyboard Shortcuts — Global hotkeys for L&S Mission Control
 // ═══════════════════════════════════════════════════════════
 
 const NAV_ROUTES = ['/', '/chat', '/workshop', '/costs', '/cron', '/agents', '/memory', '/settings'];

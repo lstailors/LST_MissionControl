@@ -21,7 +21,7 @@ import { notifications } from '@/services/notifications';
 import { changeLanguage } from '@/i18n';
 
 // ═══════════════════════════════════════════════════════════
-// AEGIS Desktop v4.0 — Mission Control
+// L&S Mission Control — Dashboard for L&S Custom Tailors
 // ═══════════════════════════════════════════════════════════
 
 export default function App() {

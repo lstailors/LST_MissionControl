@@ -1,7 +1,7 @@
 {
-  "name": "aegis-desktop",
+  "name": "ls-mission-control",
   "version": "5.4.0",
-  "description": "AEGIS Desktop — Advanced Chat Client for OpenClaw Gateway",
+  "description": "Mission Control dashboard for L&S Custom Tailors",
   "main": "dist-electron/main.js",
   "author": "Rashed",
   "license": "MIT",
@@ -60,8 +60,8 @@
     "wait-on": "^8.0.3"
   },
   "build": {
-    "appId": "com.aegis.desktop",
-    "productName": "AEGIS Desktop",
+    "appId": "com.ls.missioncontrol",
+    "productName": "L&S Mission Control",
     "copyright": "Copyright © 2026 Rashed",
     "asar": true,
     "asarUnpack": [
@@ -86,8 +86,8 @@
       "allowElevation": true,
       "createDesktopShortcut": "always",
       "createStartMenuShortcut": true,
-      "shortcutName": "AEGIS Desktop",
-      "menuCategory": "AEGIS",
+      "shortcutName": "L&S Mission Control",
+      "menuCategory": "L&S Mission Control",
       "perMachine": false,
       "installerIcon": "assets/icon.ico",
       "uninstallerIcon": "assets/icon.ico",
@@ -95,7 +95,7 @@
       "deleteAppDataOnUninstall": false,
       "runAfterFinish": true,
       "installerSidebar": null,
-      "artifactName": "AEGIS-Desktop-Setup-${version}.${ext}",
+      "artifactName": "LS-MissionControl-Setup-${version}.${ext}",
       "unicode": true,
       "include": "installer/nsis-script.nsh",
       "installerLanguages": [
@@ -122,7 +122,7 @@
     "fileAssociations": [],
     "protocols": [
       {
-        "name": "AEGIS Protocol",
+        "name": "L&S Mission Control Protocol",
         "schemes": [
           "aegis"
         ]

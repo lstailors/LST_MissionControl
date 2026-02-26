@@ -77,7 +77,7 @@ export function PairingScreen({ gatewayHttpUrl, onPaired, onCancel, errorMessage
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             clientId: 'openclaw-control-ui',
-            clientName: 'AEGIS Desktop',
+            clientName: 'L&S Mission Control',
             platform: navigator.platform?.toLowerCase().includes('mac') ? 'macos' : navigator.platform?.toLowerCase().includes('linux') ? 'linux' : 'windows',
             scopes: ['operator.read', 'operator.write', 'operator.admin'],
           }),

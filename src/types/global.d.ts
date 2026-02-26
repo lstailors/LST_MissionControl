@@ -1,4 +1,4 @@
-// AEGIS Desktop — Global Type Declarations
+// L&S Mission Control — Global Type Declarations
 
 interface AegisAPI {
   window: {

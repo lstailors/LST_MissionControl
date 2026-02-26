@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════
 // NavSidebar — Compact icon-only sidebar (64px)
-// Matches conceptual design: icons + active bar + user avatar
+// L&S Mission Control: logo + nav icons + user avatar
 // ═══════════════════════════════════════════════════════════
 
 import { NavLink, useLocation } from 'react-router-dom';
@@ -52,6 +52,26 @@ export function NavSidebar() {
         'py-3 relative'
       )}
     >
+      {/* L&S Logo */}
+      <div className="flex flex-col items-center mb-3 pb-3 border-b border-aegis-border">
+        <img
+          src="/ls-logo.png"
+          alt="L&S"
+          className="w-[60px] h-auto"
+        />
+        <span
+          className="text-aegis-text-muted mt-1"
+          style={{
+            fontSize: '7px',
+            fontVariant: 'all-small-caps',
+            letterSpacing: '0.3em',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          MISSION CONTROL
+        </span>
+      </div>
+
       {/* Navigation Icons */}
       <nav className="flex-1 flex flex-col items-center gap-1">
         {navItems.map((item) => {
@@ -80,7 +100,7 @@ export function NavSidebar() {
                     'absolute top-1/2 -translate-y-1/2',
                     'w-[3px] h-[20px] rounded-full',
                     'bg-aegis-primary',
-                    'shadow-[0_0_12px_rgba(78,201,176,0.4)]',
+                    'shadow-[0_0_12px_rgba(75,140,80,0.4)]',
                     isRTL ? '-right-[12px]' : '-left-[12px]'
                   )}
                   transition={{

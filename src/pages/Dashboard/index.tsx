@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// Dashboard — AEGIS Mission Control (Cost-First Design)
+// Dashboard — L&S Mission Control (Cost-First Design)
 // Sections: Top Bar → Hero Cards → Chart + Agents → Actions
 // ═══════════════════════════════════════════════════════════
 

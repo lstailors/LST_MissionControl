@@ -27,7 +27,7 @@ try {
 }
 
 // Windows requires AppUserModelId for desktop notifications (especially in dev mode)
-app.setAppUserModelId('com.aegis.desktop');
+app.setAppUserModelId('com.ls.missioncontrol');
 
 // ═══════════════════════════════════════════════════════════
 // Device Identity (Ed25519) — Required for Gateway operator scopes
@@ -202,7 +202,7 @@ function createSplashWindow(): void {
     <style>
       * { margin:0; padding:0; box-sizing:border-box; }
       body {
-        background: rgba(10,10,20,0.95);
+        background: rgba(10,18,11,0.95);
         border-radius: 20px;
         display: flex; flex-direction: column;
         align-items: center; justify-content: center;
@@ -212,10 +212,10 @@ function createSplashWindow(): void {
       }
       .logo {
         width: 72px; height: 72px; border-radius: 18px;
-        background: linear-gradient(135deg, #4EC9B0, #6C9FFF);
+        background: linear-gradient(135deg, #4B8C50, #F0ECD4);
         display: flex; align-items: center; justify-content: center;
-        font-size: 32px; font-weight: 700; color: white;
-        box-shadow: 0 8px 32px rgba(78,201,176,0.3);
+        font-size: 24px; font-weight: 700; color: white;
+        box-shadow: 0 8px 32px rgba(75,140,80,0.3);
         animation: float 2s ease-in-out infinite;
       }
       @keyframes float {
@@ -226,8 +226,8 @@ function createSplashWindow(): void {
       .subtitle { color: #5a6370; font-size: 11px; margin-top: 6px; }
       .spinner {
         margin-top: 28px; width: 24px; height: 24px;
-        border: 2px solid rgba(78,201,176,0.15);
-        border-top-color: #4EC9B0;
+        border: 2px solid rgba(75,140,80,0.15);
+        border-top-color: #4B8C50;
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
       }
@@ -235,8 +235,8 @@ function createSplashWindow(): void {
     </style>
     </head>
     <body>
-      <div class="logo">A</div>
-      <div class="title">AEGIS Desktop</div>
+      <div class="logo">L&S</div>
+      <div class="title">L&S Mission Control</div>
       <div class="subtitle">جاري التحميل...</div>
       <div class="spinner"></div>
     </body>
@@ -257,7 +257,7 @@ function createWindow(): void {
     titleBarStyle: 'hidden',
     titleBarOverlay: false,
     transparent: false,
-    backgroundColor: '#0a0a14',
+    backgroundColor: '#0A120B',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -468,7 +468,7 @@ function setupIPC(): void {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           clientId: 'openclaw-control-ui',
-          clientName: 'AEGIS Desktop',
+          clientName: 'L&S Mission Control',
           platform: process.platform,
           scopes: ['operator.read', 'operator.write', 'operator.admin'],
         }),
@@ -520,7 +520,7 @@ function setupIPC(): void {
           height: 800,
           minWidth: 600,
           minHeight: 400,
-          title: `AEGIS Preview — ${data.title}`,
+          title: `L&S Preview — ${data.title}`,
           backgroundColor: '#0d1117',
           autoHideMenuBar: true,
           webPreferences: {
@@ -541,7 +541,7 @@ function setupIPC(): void {
       } else {
         // Window exists — update content and focus
         previewWindow.webContents.send('artifact:content', data);
-        previewWindow.setTitle(`AEGIS Preview — ${data.title}`);
+        previewWindow.setTitle(`L&S Preview — ${data.title}`);
         previewWindow.focus();
       }
 
@@ -795,7 +795,7 @@ function setupIPC(): void {
 
   ipcMain.handle('screenshot:capture', async () => {
     try {
-      // Minimize AEGIS for clean screen capture
+      // Minimize app for clean screen capture
       const wasVisible = mainWindow!.isVisible() && !mainWindow!.isMinimized();
       if (wasVisible) mainWindow!.minimize();
       await new Promise((r) => setTimeout(r, 500));
@@ -836,7 +836,7 @@ function setupIPC(): void {
         thumbnailSize: { width: 400, height: 280 },
         fetchWindowIcons: true,
       });
-      // Return all windows (including AEGIS Desktop)
+      // Return all windows (including L&S Mission Control)
       return sources
         .filter((s) => s.thumbnail && !s.thumbnail.isEmpty())
         .map((s) => ({
@@ -851,7 +851,7 @@ function setupIPC(): void {
 
   ipcMain.handle('screenshot:captureWindow', async (_e, windowId: string) => {
     try {
-      // For AEGIS own window, use native capture
+      // For our own window, use native capture
       const ownWindowId = `window:${mainWindow!.getMediaSourceId()}`;
       const isOwnWindow = windowId === ownWindowId || windowId.includes(String(mainWindow!.id));
 
@@ -885,7 +885,7 @@ function setupIPC(): void {
       }
 
       // For other windows — get high-res thumbnail
-      // Minimize AEGIS briefly so it doesn't cover the target
+      // Minimize app briefly so it doesn't cover the target
       const wasVisible = mainWindow!.isVisible() && !mainWindow!.isMinimized();
       if (wasVisible) mainWindow!.minimize();
       await new Promise((r) => setTimeout(r, 400));
@@ -896,7 +896,7 @@ function setupIPC(): void {
       });
       const source = sources.find((s) => s.id === windowId);
 
-      // Restore AEGIS
+      // Restore app
       if (wasVisible) {
         mainWindow!.restore();
         mainWindow!.focus();
@@ -1209,5 +1209,5 @@ app.on('before-quit', () => {
   ptyProcesses.clear();
 });
 
-console.log('🛡️ AEGIS Desktop v5.4 started');
+console.log('L&S Mission Control v5.4 started');
 

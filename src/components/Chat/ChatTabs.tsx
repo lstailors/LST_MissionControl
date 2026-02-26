@@ -10,7 +10,7 @@ import clsx from 'clsx';
 
 // ═══════════════════════════════════════════════════════════
 // ChatHeader — Compact header replacing old tab bar
-// Layout: 🛡️ AEGIS ∨       +  ●  165k / 200k
+// Layout: L&S ∨       +  ●  165k / 200k
 // ═══════════════════════════════════════════════════════════
 
 const MAIN_SESSION = 'agent:main:main';
@@ -35,7 +35,7 @@ function formatDuration(ms: number): string {
 
 /** Readable label for a session tab */
 function sessionLabel(session: Session | undefined, key: string): string {
-  if (key === MAIN_SESSION) return 'AEGIS';
+  if (key === MAIN_SESSION) return 'L&S';
   if (session?.label) {
     const label = session.label;
     return label.length > 30 ? label.slice(0, 28) + '…' : label;
@@ -46,7 +46,7 @@ function sessionLabel(session: Session | undefined, key: string): string {
 }
 
 // ═══════════════════════════════════════════════════════════
-// Agent Status Tooltip — hover card on AEGIS identity
+// Agent Status Tooltip — hover card on main agent identity
 // ═══════════════════════════════════════════════════════════
 
 function AgentStatusTooltip({ visible, tokenUsage, connected }: {
@@ -95,7 +95,7 @@ function AgentStatusTooltip({ visible, tokenUsage, connected }: {
               🛡️
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-bold text-aegis-primary">AEGIS</div>
+              <div className="text-sm font-bold text-aegis-primary">L&S</div>
               <div className="text-[9px] text-aegis-text-dim font-mono">{modelShort}</div>
             </div>
             <div className={clsx(
@@ -434,7 +434,7 @@ export function ChatTabs() {
     >
       {/* ── Left: Identity + Status + Tokens + Session Switcher ── */}
       <div className="relative flex items-center gap-2.5 min-w-0">
-        {/* AEGIS identity block — hover for tooltip */}
+        {/* L&S identity block — hover for tooltip */}
         <div
           ref={identityRef}
           className="flex items-center gap-2.5 cursor-default select-none"
