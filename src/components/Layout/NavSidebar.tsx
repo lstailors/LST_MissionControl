@@ -3,13 +3,14 @@
 // L&S Mission Control: logo + nav icons + user avatar
 // ═══════════════════════════════════════════════════════════
 
+import React from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import {
   LayoutDashboard, MessageCircle, Kanban, DollarSign,
-  Clock, Bot, Settings, Brain, Activity, User, Puzzle,
-  Terminal, LogOut, ClipboardList, Users, CalendarDays, Receipt,
+  Bot, Settings, Brain, LogOut, ClipboardList, Users,
+  Receipt, Calendar, Scissors, Factory, CheckCircle,
 } from 'lucide-react';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -23,22 +24,25 @@ interface NavItem {
   icon: any;
   labelKey: string;
   badge?: string;
+  dividerBefore?: boolean;
 }
 
 const navItems: NavItem[] = [
+  // Primary nav
   { to: '/', icon: LayoutDashboard, labelKey: 'nav.dashboard' },
+  { to: '/agents', icon: Bot, labelKey: 'nav.agents' },
+  { to: '/chat', icon: MessageCircle, labelKey: 'nav.chat' },
+  { to: '/finance', icon: DollarSign, labelKey: 'nav.finance' },
+  { to: '/workshop', icon: Kanban, labelKey: 'nav.workshop' },
+  { to: '/invoices', icon: Receipt, labelKey: 'nav.invoices' },
   { to: '/orders', icon: ClipboardList, labelKey: 'nav.orders' },
   { to: '/customers', icon: Users, labelKey: 'nav.customers' },
-  { to: '/calendar', icon: CalendarDays, labelKey: 'nav.calendar' },
-  { to: '/invoices', icon: Receipt, labelKey: 'nav.invoices' },
-  { to: '/chat', icon: MessageCircle, labelKey: 'nav.chat' },
-  { to: '/workshop', icon: Kanban, labelKey: 'nav.workshop' },
-  { to: '/cron', icon: Clock, labelKey: 'nav.cron' },
-  { to: '/agents', icon: Bot, labelKey: 'nav.agents' },
-  { to: '/costs', icon: DollarSign, labelKey: 'nav.costs' },
-  { to: '/skills', icon: Puzzle, labelKey: 'nav.skills' },
-  { to: '/terminal', icon: Terminal, labelKey: 'nav.terminal' },
-  { to: '/memory', icon: Brain, labelKey: 'nav.memory', badge: '🧪' },
+  // Secondary nav (after divider)
+  { to: '/fittings', icon: Calendar, labelKey: 'nav.fittings', dividerBefore: true },
+  { to: '/fabrics', icon: Scissors, labelKey: 'nav.fabrics' },
+  { to: '/manufacturing', icon: Factory, labelKey: 'nav.manufacturing' },
+  { to: '/approvals', icon: CheckCircle, labelKey: 'nav.approvals' },
+  { to: '/analytics', icon: Brain, labelKey: 'nav.analytics' },
   { to: '/settings', icon: Settings, labelKey: 'nav.settings' },
 ];
 
@@ -93,56 +97,61 @@ export function NavSidebar() {
             (item.to !== '/' && location.pathname.startsWith(item.to));
 
           return (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              aria-current={isActive ? 'page' : undefined}
-              className={clsx(
-                'relative w-[40px] h-[40px] rounded-xl flex-shrink-0',
-                'flex items-center justify-center',
-                'transition-all duration-300 group',
-                isActive
-                  ? 'nav-icon-active-glow text-aegis-primary'
-                  : 'text-aegis-text-muted hover:text-aegis-text-secondary hover:bg-[rgb(var(--aegis-overlay)/0.04)]'
+            <React.Fragment key={item.to}>
+              {/* Divider before secondary nav */}
+              {item.dividerBefore && (
+                <div className="w-[28px] my-1.5 h-px bg-gradient-to-r from-transparent via-[rgba(240,236,212,0.10)] to-transparent" />
               )}
-            >
-              {/* Active indicator bar — animated slide */}
-              {isActive && (
-                <motion.div
-                  layoutId="nav-active-bar"
-                  className={clsx(
-                    'absolute top-1/2 -translate-y-1/2',
-                    'w-[3px] h-[20px] rounded-full',
-                    'bg-aegis-primary',
-                    'shadow-[0_0_12px_rgba(75,140,80,0.4)]',
-                    isRTL ? '-right-[12px]' : '-left-[12px]'
-                  )}
-                  transition={{
-                    type: 'spring',
-                    stiffness: 400,
-                    damping: 30,
-                  }}
-                />
-              )}
-
-              <div className="relative">
-                <item.icon size={18} className={clsx(isActive && 'icon-halo-teal')} />
-                {item.badge && (
-                  <span className="absolute -top-1.5 -right-2 text-[8px]">{item.badge}</span>
+              <NavLink
+                to={item.to}
+                aria-current={isActive ? 'page' : undefined}
+                className={clsx(
+                  'relative w-[40px] h-[40px] rounded-xl flex-shrink-0',
+                  'flex items-center justify-center',
+                  'transition-all duration-300 group',
+                  isActive
+                    ? 'bg-[rgba(38,59,40,0.40)] text-[#F0ECD4]'
+                    : 'text-aegis-text-muted hover:text-aegis-text-secondary hover:bg-[rgb(var(--aegis-overlay)/0.04)]'
                 )}
-              </div>
+              >
+                {/* Active indicator bar — cream 3px left border */}
+                {isActive && (
+                  <motion.div
+                    layoutId="nav-active-bar"
+                    className={clsx(
+                      'absolute top-1/2 -translate-y-1/2',
+                      'w-[3px] h-[20px] rounded-full',
+                      'bg-[#F0ECD4]',
+                      'shadow-[0_0_12px_rgba(240,236,212,0.3)]',
+                      isRTL ? '-right-[12px]' : '-left-[12px]'
+                    )}
+                    transition={{
+                      type: 'spring',
+                      stiffness: 400,
+                      damping: 30,
+                    }}
+                  />
+                )}
 
-              {/* Tooltip on hover */}
-              <div className={clsx(
-                'absolute top-1/2 -translate-y-1/2 px-2.5 py-1.5 rounded-lg',
-                'bg-aegis-elevated-solid border border-aegis-border shadow-lg',
-                'text-aegis-text text-[11px] font-medium whitespace-nowrap',
-                'opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50',
-                isRTL ? 'right-full mr-3' : 'left-full ml-3'
-              )}>
-                {t(item.labelKey)}
-              </div>
-            </NavLink>
+                <div className="relative">
+                  <item.icon size={18} className={clsx(isActive && 'icon-halo-teal')} />
+                  {item.badge && (
+                    <span className="absolute -top-1.5 -right-2 text-[8px]">{item.badge}</span>
+                  )}
+                </div>
+
+                {/* Tooltip on hover */}
+                <div className={clsx(
+                  'absolute top-1/2 -translate-y-1/2 px-2.5 py-1.5 rounded-lg',
+                  'bg-aegis-elevated-solid border border-aegis-border shadow-lg',
+                  'text-aegis-text text-[11px] font-medium whitespace-nowrap',
+                  'opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50',
+                  isRTL ? 'right-full mr-3' : 'left-full ml-3'
+                )}>
+                  {t(item.labelKey)}
+                </div>
+              </NavLink>
+            </React.Fragment>
           );
         })}
       </nav>

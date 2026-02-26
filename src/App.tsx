@@ -10,6 +10,7 @@ import { WorkshopPage } from '@/pages/Workshop';
 import { FullAnalyticsPage } from '@/pages/FullAnalytics';
 import { CronMonitorPage } from '@/pages/CronMonitor';
 import { AgentHubPage } from '@/pages/AgentHub';
+import { AgentsPage } from '@/pages/Agents';
 import { MemoryExplorerPage } from '@/pages/MemoryExplorer';
 import { SkillsPage as SkillsPageFull } from '@/pages/SkillsPage';
 import { OrdersPage } from '@/pages/Orders';
@@ -331,10 +332,16 @@ export default function App() {
               <Route path="/invoices" element={<InvoicesPage />} />
               <Route path="/chat" element={<ChatPage />} />
               <Route path="/workshop" element={<WorkshopPage />} />
+              <Route path="/finance" element={<FullAnalyticsPage />} />
               <Route path="/costs" element={<FullAnalyticsPage />} />
               <Route path="/analytics" element={<FullAnalyticsPage />} />
+              <Route path="/fittings" element={<CalendarPage />} />
+              <Route path="/fabrics" element={<WorkshopPage />} />
+              <Route path="/manufacturing" element={<WorkshopPage />} />
+              <Route path="/approvals" element={<WorkshopPage />} />
               <Route path="/cron" element={<CronMonitorPage />} />
-              <Route path="/agents" element={<AgentHubPage />} />
+              <Route path="/agents" element={<AgentsPage />} />
+              <Route path="/agent-hub" element={<AgentHubPage />} />
               <Route path="/skills" element={<SkillsPageFull />} />
               <Route path="/terminal" element={<TerminalPage />} />
               <Route path="/memory" element={<MemoryExplorerPage />} />

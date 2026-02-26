@@ -641,3 +641,38 @@
   .mc-grid-main { grid-template-columns: 1fr; }
   .mc-grid-main > :nth-child(2) { display: none; }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   Agent Status Lights — Animated dots for Agents page
+   ═══════════════════════════════════════════════════════════ */
+
+/* Active: outer ring pulses opacity 0.6→0.3 over 2s */
+@keyframes agent-active-ring {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.3; }
+}
+.agent-status-active-ring {
+  border: 1.5px solid #4ADE80;
+  animation: agent-active-ring 2s ease-in-out infinite;
+}
+
+/* Active: glow halo scales up and fades 1→1.4 over 2s */
+@keyframes agent-active-halo {
+  0% { transform: scale(1); opacity: 0.4; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+.agent-status-active-halo {
+  background: #4ADE8044;
+  border-radius: 50%;
+  animation: agent-active-halo 2s ease-out infinite;
+}
+
+/* Idle: slower pulse 3s cycle, subtler scale 1→1.2 */
+@keyframes agent-idle-ring {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.25; transform: scale(1.2); }
+}
+.agent-status-idle-ring {
+  border: 1.5px solid #FBBF24;
+  animation: agent-idle-ring 3s ease-in-out infinite;
+}

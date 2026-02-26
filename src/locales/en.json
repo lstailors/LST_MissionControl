@@ -29,7 +29,13 @@
     "customers": "Customers",
     "calendar": "Calendar",
     "invoices": "Invoices",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "finance": "$ Finance",
+    "fittings": "Fittings",
+    "fabrics": "Fabrics",
+    "manufacturing": "Manufacturing",
+    "approvals": "Approvals",
+    "analytics": "Analytics"
   },
   "skills": {
     "title": "Skills",
