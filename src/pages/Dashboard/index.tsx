@@ -651,7 +651,7 @@ export function DashboardPage() {
             </ResponsiveContainer>
           ) : (
             <div className="h-[160px] flex items-center justify-center text-[12px] text-aegis-text-dim">
-              {connected ? t('common.loading') : t('dashboard.notConnected')}
+              {connected ? t('common.loading') : 'No cost data yet'}
             </div>
           )}
         </GlassCard>
@@ -694,7 +694,7 @@ export function DashboardPage() {
               })
             ) : (
               <div className="text-[11px] text-aegis-text-dim text-center py-8">
-                {connected ? t('dashboard.noAgentData') : t('dashboard.notConnected')}
+                {connected ? t('dashboard.noAgentData') : 'No agent data yet'}
               </div>
             )}
           </div>
@@ -781,7 +781,7 @@ export function DashboardPage() {
             })}
             {activeSessions.length === 0 && (
               <div className="text-[11px] text-aegis-text-dim text-center py-6">
-                {connected ? t('dashboard.noActiveSessions') : t('dashboard.notConnected')}
+                {connected ? t('dashboard.noActiveSessions') : 'No active sessions'}
               </div>
             )}
           </div>
