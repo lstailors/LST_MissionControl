@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useState, useRef } from 'react';
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppLayout } from '@/components/Layout/AppLayout';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
@@ -314,8 +314,8 @@ export default function App() {
         {/* In-app toast notifications — always visible, above all routes */}
         <ToastContainer />
         <Routes>
-          {/* Public route */}
-          <Route path="/login" element={<LoginPage />} />
+          {/* Public route — temporarily redirects to dashboard while auth is bypassed */}
+          <Route path="/login" element={<Navigate to="/" replace />} />
 
           {/* Protected routes — require Supabase auth */}
           <Route element={<ProtectedRoute />}>
