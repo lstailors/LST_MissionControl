@@ -7,11 +7,11 @@ let supabase: SupabaseClient;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('[Supabase] Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY — using placeholder');
-  // Create a client with a dummy URL so the app doesn't crash at import time.
-  // All queries will fail gracefully and the dashboard will show "Supabase Offline".
   supabase = createClient('https://placeholder.supabase.co', 'placeholder');
 } else {
-  supabase = createClient(supabaseUrl, supabaseAnonKey);
+  // In dev mode, proxy through Vite to avoid browser network restrictions
+  const effectiveUrl = import.meta.env.DEV ? '/supabase-proxy' : supabaseUrl;
+  supabase = createClient(effectiveUrl, supabaseAnonKey);
 }
 
 export { supabase };
