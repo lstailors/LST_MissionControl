@@ -3,15 +3,18 @@
 // L&S Mission Control: logo + nav icons + user avatar
 // ═══════════════════════════════════════════════════════════
 
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import {
   LayoutDashboard, MessageCircle, Kanban, DollarSign,
   Clock, Bot, Settings, Brain, Activity, User, Puzzle,
-  Terminal,
+  Terminal, LogOut,
 } from 'lucide-react';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { useAuthStore } from '@/stores/authStore';
+import { Avatar } from '@/components/shared/Avatar';
+import { getAvatarUrl } from '@/lib/avatarHelpers';
 import { getDirection } from '@/i18n';
 import clsx from 'clsx';
 
@@ -38,9 +41,16 @@ const navItems: NavItem[] = [
 export function NavSidebar() {
   const { t } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
   const { language } = useSettingsStore();
+  const user = useAuthStore((s) => s.user);
+  const signOut = useAuthStore((s) => s.signOut);
   const dir = getDirection(language);
   const isRTL = dir === 'rtl';
+
+  const userEmail = user?.email || '';
+  const userId = user?.id || '';
+  const avatarUrl = userId ? getAvatarUrl('user', userId) : null;
 
   const borderClass = isRTL ? 'border-l' : 'border-r';
 
@@ -133,17 +143,42 @@ export function NavSidebar() {
         })}
       </nav>
 
-      {/* Bottom: User Avatar */}
-      <div className="pt-3">
-        <div className={clsx(
-          'w-[36px] h-[36px] rounded-xl',
-          'bg-gradient-to-br from-aegis-primary/20 to-[rgba(213,0,249,0.15)]',
-          'border border-[rgb(var(--aegis-overlay)/0.08)]',
-          'flex items-center justify-center',
-          'text-aegis-primary'
-        )}>
-          <User size={16} />
+      {/* Bottom: User Avatar + Sign Out */}
+      <div className="pt-3 border-t border-aegis-border flex flex-col items-center gap-2">
+        <div className="relative group">
+          <Avatar
+            src={avatarUrl}
+            name={userEmail}
+            size={32}
+            accentColor="#4B8C50"
+          />
+          {/* Email tooltip on hover */}
+          <div className={clsx(
+            'absolute top-1/2 -translate-y-1/2 px-2.5 py-1.5 rounded-lg',
+            'bg-aegis-elevated-solid border border-aegis-border shadow-lg',
+            'text-aegis-text text-[10px] font-mono whitespace-nowrap',
+            'opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50',
+            isRTL ? 'right-full mr-3' : 'left-full ml-3'
+          )}>
+            {userEmail || 'User'}
+          </div>
         </div>
+        <button
+          onClick={async () => { await signOut(); navigate('/login'); }}
+          className="w-[32px] h-[32px] rounded-lg flex items-center justify-center text-aegis-text-dim hover:text-aegis-danger hover:bg-aegis-danger-surface transition-colors group relative"
+          title="Sign Out"
+        >
+          <LogOut size={14} />
+          <div className={clsx(
+            'absolute top-1/2 -translate-y-1/2 px-2.5 py-1.5 rounded-lg',
+            'bg-aegis-elevated-solid border border-aegis-border shadow-lg',
+            'text-aegis-text text-[10px] font-medium whitespace-nowrap',
+            'opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50',
+            isRTL ? 'right-full mr-3' : 'left-full ml-3'
+          )}>
+            Sign Out
+          </div>
+        </button>
       </div>
     </div>
   );

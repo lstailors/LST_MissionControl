@@ -12,6 +12,9 @@ import { GlassCard } from '@/components/shared/GlassCard';
 import { PageTransition } from '@/components/shared/PageTransition';
 import { ProgressRing } from '@/components/shared/ProgressRing';
 import { StatusDot } from '@/components/shared/StatusDot';
+import { AvatarUpload } from '@/components/shared/AvatarUpload';
+import { Avatar } from '@/components/shared/Avatar';
+import { agents as lsAgents, findAgent } from '@/config/agents';
 import { useChatStore } from '@/stores/chatStore';
 import { useGatewayDataStore, refreshAll, refreshGroup } from '@/stores/gatewayDataStore';
 import { gateway } from '@/services/gateway';
@@ -838,13 +841,21 @@ export function AgentHubPage() {
                       const spawnedLabel = getSpawnedLabel(agent.id);
                       const isRunning = activeSessions.length > 0 || spawned;
 
+                      const lsAgent = findAgent(agent.id);
+
                       return (
                         <div key={agent.id}>
                           <GlassCard delay={i * 0.05} hover shimmer={isRunning}>
                             <div className="flex items-start gap-4">
-                              <div className="w-[48px] h-[48px] rounded-xl flex items-center justify-center shrink-0 border relative"
-                                style={{ background: `linear-gradient(135deg, ${display.color}20, ${display.color}05)`, borderColor: isRunning ? `${display.color}40` : `${display.color}25`, color: display.color }}>
-                                {display.icon}
+                              <div className="relative shrink-0">
+                                <AvatarUpload
+                                  type="agent"
+                                  id={agent.id}
+                                  src={lsAgent?.avatar}
+                                  name={agent.name || agent.id}
+                                  size={48}
+                                  accentColor={lsAgent?.accent || display.color}
+                                />
                                 {isRunning && <div className="absolute -bottom-[2px] -right-[2px]"><StatusDot status="active" size={10} glow beacon /></div>}
                               </div>
                               <div className="flex-1 min-w-0">

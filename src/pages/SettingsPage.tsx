@@ -6,18 +6,58 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Settings, Bell, BellOff, Volume2, VolumeX,
-  Wifi, WifiOff, Palette, Cpu, CheckCircle, Loader2, Keyboard, Copy
+  Wifi, WifiOff, Palette, Cpu, CheckCircle, Loader2, Keyboard, Copy, UserCircle,
 } from 'lucide-react';
 import { APP_VERSION } from '@/hooks/useAppVersion';
 import { GlassCard } from '@/components/shared/GlassCard';
 import { PageTransition } from '@/components/shared/PageTransition';
 import { StatusDot } from '@/components/shared/StatusDot';
+import { AvatarUpload } from '@/components/shared/AvatarUpload';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useChatStore } from '@/stores/chatStore';
+import { useAuthStore } from '@/stores/authStore';
 import { useGatewayDataStore } from '@/stores/gatewayDataStore';
+import { getAvatarUrl } from '@/lib/avatarHelpers';
 import { gateway } from '@/services/gateway';
 import { notifications } from '@/services/notifications';
 import clsx from 'clsx';
+
+function ProfileSection() {
+  const user = useAuthStore((s) => s.user);
+  const userId = user?.id || '';
+  const userEmail = user?.email || '';
+  const avatarUrl = userId ? getAvatarUrl('user', userId) : null;
+
+  return (
+    <GlassCard delay={0}>
+      <h3 className="text-[14px] font-semibold text-aegis-text mb-4 flex items-center gap-2">
+        <UserCircle size={16} className="text-aegis-primary" />
+        Profile
+      </h3>
+      <div className="flex items-center gap-5">
+        <AvatarUpload
+          type="user"
+          id={userId}
+          src={avatarUrl}
+          name={userEmail}
+          size={64}
+          accentColor="#4B8C50"
+        />
+        <div className="flex-1 min-w-0">
+          <div className="text-[14px] font-semibold text-aegis-text truncate">
+            {userEmail || 'User'}
+          </div>
+          <div className="text-[11px] text-aegis-text-dim mt-1 font-mono truncate">
+            {userId ? `ID: ${userId.slice(0, 8)}…` : '—'}
+          </div>
+          <div className="text-[10px] text-aegis-text-muted mt-1">
+            Click avatar to upload a new photo
+          </div>
+        </div>
+      </div>
+    </GlassCard>
+  );
+}
 
 export function SettingsPageFull() {
   const { t } = useTranslation();
@@ -159,6 +199,9 @@ export function SettingsPageFull() {
           {t('settings.title')}
         </h1>
       </div>
+
+      {/* Profile */}
+      <ProfileSection />
 
       {/* Theme */}
       <GlassCard delay={0}>

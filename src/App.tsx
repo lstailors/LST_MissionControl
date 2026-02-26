@@ -2,6 +2,8 @@ import { useEffect, useCallback, useState, useRef } from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AppLayout } from '@/components/Layout/AppLayout';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { LoginPage } from '@/pages/Login';
 import { DashboardPage } from '@/pages/Dashboard';
 import { ChatPage } from '@/pages/ChatPage';
 import { WorkshopPage } from '@/pages/Workshop';
@@ -16,6 +18,7 @@ import { PairingScreen } from '@/components/PairingScreen';
 import { ToastContainer } from '@/components/Toast/ToastContainer';
 import { useChatStore } from '@/stores/chatStore';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { useAuthStore } from '@/stores/authStore';
 import { gateway } from '@/services/gateway';
 import { notifications } from '@/services/notifications';
 import { changeLanguage } from '@/i18n';
@@ -149,6 +152,9 @@ export default function App() {
     // ── Strategy 3: FALLBACK_MODELS in TitleBar ──
     console.warn('[Models] All strategies failed — using hardcoded fallback');
   }, [setAvailableModels]);
+
+  // ── Initialize auth ──
+  useEffect(() => { useAuthStore.getState().initialize(); }, []);
 
   // ── Request notification permission (Web Notification API) ──
   useEffect(() => { notifications.requestPermission(); }, []);
@@ -308,18 +314,24 @@ export default function App() {
         {/* In-app toast notifications — always visible, above all routes */}
         <ToastContainer />
         <Routes>
-          <Route element={<AppLayout />}>
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/chat" element={<ChatPage />} />
-            <Route path="/workshop" element={<WorkshopPage />} />
-            <Route path="/costs" element={<FullAnalyticsPage />} />
-            <Route path="/analytics" element={<FullAnalyticsPage />} />
-            <Route path="/cron" element={<CronMonitorPage />} />
-            <Route path="/agents" element={<AgentHubPage />} />
-            <Route path="/skills" element={<SkillsPageFull />} />
-            <Route path="/terminal" element={<TerminalPage />} />
-            <Route path="/memory" element={<MemoryExplorerPage />} />
-            <Route path="/settings" element={<SettingsPageFull />} />
+          {/* Public route */}
+          <Route path="/login" element={<LoginPage />} />
+
+          {/* Protected routes — require Supabase auth */}
+          <Route element={<ProtectedRoute />}>
+            <Route element={<AppLayout />}>
+              <Route path="/" element={<DashboardPage />} />
+              <Route path="/chat" element={<ChatPage />} />
+              <Route path="/workshop" element={<WorkshopPage />} />
+              <Route path="/costs" element={<FullAnalyticsPage />} />
+              <Route path="/analytics" element={<FullAnalyticsPage />} />
+              <Route path="/cron" element={<CronMonitorPage />} />
+              <Route path="/agents" element={<AgentHubPage />} />
+              <Route path="/skills" element={<SkillsPageFull />} />
+              <Route path="/terminal" element={<TerminalPage />} />
+              <Route path="/memory" element={<MemoryExplorerPage />} />
+              <Route path="/settings" element={<SettingsPageFull />} />
+            </Route>
           </Route>
         </Routes>
       </HashRouter>
