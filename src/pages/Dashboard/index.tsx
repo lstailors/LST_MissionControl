@@ -1,10 +1,10 @@
 // ═══════════════════════════════════════════════════════════
-// Dashboard — L&S Mission Control (Cost-First Design)
-// Sections: Top Bar → Hero Cards → Chart + Agents → Actions
+// Dashboard — L&S Mission Control
+// Sections: Top Bar → L&S Business Cards → Fittings + Activity
+//           → AI Cost Chart + Agents → Quick Actions + Sessions
 // ═══════════════════════════════════════════════════════════
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-// Note: useCallback still needed for handleRefresh/handleQuickAction
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
@@ -16,6 +16,7 @@ import {
   Heart, Mail, Calendar, RefreshCw, BarChart3, FileText,
   Wifi, WifiOff, Bot, Shield, Activity, Zap, ChevronRight,
   TrendingUp, TrendingDown, DollarSign, Cpu,
+  Scissors, Users, ClipboardCheck, Clock,
 } from 'lucide-react';
 import { GlassCard } from '@/components/shared/GlassCard';
 import { PageTransition } from '@/components/shared/PageTransition';
@@ -23,6 +24,7 @@ import { StatusDot } from '@/components/shared/StatusDot';
 import { Sparkline } from '@/components/shared/Sparkline';
 import { useChatStore } from '@/stores/chatStore';
 import { useGatewayDataStore, refreshAll } from '@/stores/gatewayDataStore';
+import { useSupabaseStore } from '@/stores/supabaseStore';
 import { gateway } from '@/services/gateway';
 import clsx from 'clsx';
 import { themeHex, themeAlpha, dataColor } from '@/utils/theme-colors';
@@ -32,10 +34,18 @@ import {
   fmtTokens, fmtCost, fmtCostShort, timeAgo, fmtUptime,
 } from './components';
 
+// ── Helpers ──────────────────────────────────────────────────
+
+const fmtRevenue = (n: number) => {
+  if (n >= 100_000) return `$${(n / 1_000).toFixed(0)}k`;
+  if (n >= 1_000) return `$${(n / 1_000).toFixed(1)}k`;
+  return `$${n.toFixed(0)}`;
+};
+
 // ── Agent emoji + display name helpers ───────────────────────
 
 const AGENT_EMOJIS: Record<string, string> = {
-  main:       '🛡️',
+  main:       '✂️',
   hilali:     '⚽',
   pipeline:   '📦',
   researcher: '🔍',
@@ -53,6 +63,17 @@ const getAgentName = (id: string) => {
   };
   return names[id.toLowerCase()] ?? id;
 };
+
+// ── Skeleton loader ──────────────────────────────────────────
+
+function SkeletonValue({ width = 60 }: { width?: number }) {
+  return (
+    <div
+      className="h-6 rounded-md bg-[rgb(var(--aegis-overlay)/0.06)] animate-pulse"
+      style={{ width }}
+    />
+  );
+}
 
 // ── Tooltip for recharts ─────────────────────────────────────
 
@@ -86,7 +107,23 @@ export function DashboardPage() {
   const navigate   = useNavigate();
   const { connected, tokenUsage } = useChatStore();
 
-  // ── Data from central store ─────────────────────────────────
+  // ── Supabase data ─────────────────────────────────────────
+  const sbStatus   = useSupabaseStore((s) => s.status);
+  const sbLoading  = useSupabaseStore((s) => s.loading);
+  const sbError    = useSupabaseStore((s) => s.error);
+  const dashboard  = useSupabaseStore((s) => s.dashboard);
+  const fetchDashboard     = useSupabaseStore((s) => s.fetchDashboard);
+  const subscribeRealtime  = useSupabaseStore((s) => s.subscribeRealtime);
+  const unsubscribeRealtime = useSupabaseStore((s) => s.unsubscribeRealtime);
+
+  // Bootstrap Supabase on mount
+  useEffect(() => {
+    fetchDashboard();
+    subscribeRealtime();
+    return () => unsubscribeRealtime();
+  }, []);
+
+  // ── Gateway data ──────────────────────────────────────────
   const sessions  = useGatewayDataStore((s) => s.sessions);
   const costData  = useGatewayDataStore((s) => s.costSummary);
   const usageData = useGatewayDataStore((s) => s.sessionsUsage);
@@ -112,7 +149,7 @@ export function DashboardPage() {
   // ── Manual Refresh ──────────────────────────────────────────
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    await refreshAll();
+    await Promise.all([refreshAll(), fetchDashboard()]);
     setTimeout(() => setRefreshing(false), 600);
   }, []);
 
@@ -135,15 +172,14 @@ export function DashboardPage() {
     setTimeout(() => setQuickActionLoading(null), 2000);
   };
 
-  // ── Derived values ───────────────────────────────────────────
+  // ── Derived values (Gateway) ───────────────────────────────
 
   const today     = new Date().toISOString().slice(0, 10);
   const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
-  const monthKey  = today.slice(0, 7); // "YYYY-MM"
+  const monthKey  = today.slice(0, 7);
 
   const allDaily: any[] = useMemo(() => costData?.daily || [], [costData]);
 
-  // Today's cost + change vs yesterday
   const todayCost = useMemo(
     () => allDaily.find((d: any) => d.date === today)?.totalCost || 0,
     [allDaily, today]
@@ -156,7 +192,6 @@ export function DashboardPage() {
     ? ((todayCost - yesterdayCost) / yesterdayCost) * 100
     : 0;
 
-  // This month's total cost
   const monthCost = useMemo(
     () => allDaily
       .filter((d: any) => d.date.startsWith(monthKey))
@@ -164,24 +199,16 @@ export function DashboardPage() {
     [allDaily, monthKey]
   );
 
-  // Sparklines: last 7 and last 30 days (oldest → newest)
   const spark7 = useMemo(() => {
     const sorted = [...allDaily].sort((a, b) => a.date.localeCompare(b.date));
     return sorted.slice(-7).map((d: any) => d.totalCost);
   }, [allDaily]);
 
-  const spark30 = useMemo(() => {
-    const sorted = [...allDaily].sort((a, b) => a.date.localeCompare(b.date));
-    return sorted.slice(-30).map((d: any) => d.totalCost);
-  }, [allDaily]);
-
-  // Tokens today (from daily cost data)
   const todayEntry   = useMemo(() => allDaily.find((d: any) => d.date === today), [allDaily, today]);
   const tokensIn     = todayEntry?.input  || 0;
   const tokensOut    = todayEntry?.output || 0;
   const tokensToday  = tokensIn + tokensOut;
 
-  // Context usage from main session
   const mainSession  = sessions.find((s: any) => s.key === 'agent:main:main');
   const mainModel    = mainSession?.model || '—';
   const shortModel   = mainModel.split('/').pop() || mainModel;
@@ -189,7 +216,6 @@ export function DashboardPage() {
   const ctxUsed      = mainSession?.totalTokens   || 0;
   const ctxMax       = mainSession?.contextTokens || 200_000;
 
-  // Active sessions + sub sessions
   const activeSessions = useMemo(
     () => sessions.filter((s: any) => (s.totalTokens || 0) > 0),
     [sessions]
@@ -202,19 +228,17 @@ export function DashboardPage() {
     [activeSessions]
   );
 
-  // Chart data: last 14 days (oldest first)
   const chartData = useMemo(() => {
     const sorted = [...allDaily]
       .sort((a, b) => a.date.localeCompare(b.date))
       .slice(-14);
     return sorted.map((d: any) => ({
-      date:   d.date.slice(5),       // MM-DD
+      date:   d.date.slice(5),
       input:  d.inputCost  || 0,
       output: d.outputCost || 0,
     }));
   }, [allDaily]);
 
-  // Agent list from usageData
   const agentList = useMemo(() => {
     const raw: any[] = usageData?.aggregates?.byAgent || [];
     return raw
@@ -227,13 +251,28 @@ export function DashboardPage() {
     [agentList]
   );
 
-  // Uptime
   const uptime = connectedSince.current ? Date.now() - connectedSince.current : 0;
 
-  // Activity feed items
+  // Activity feed: combine Supabase approval_queue + gateway sessions
   const feedItems = useMemo(() => {
     const items: { color: string; text: string; time: string }[] = [];
-    activeSessions.slice(0, 6).forEach((s: any) => {
+
+    // Supabase recent activity (approval_queue)
+    (dashboard.recentActivity || []).slice(0, 6).forEach((a: any) => {
+      const typeLabel = a.type || 'approval';
+      const statusColor = a.status === 'pending' ? themeHex('warning')
+        : a.status === 'approved' ? themeHex('success')
+        : a.status === 'rejected' ? themeHex('danger')
+        : themeHex('accent');
+      items.push({
+        color: statusColor,
+        text: `${typeLabel}: ${a.title || 'Untitled'} — ${a.status}`,
+        time: timeAgo(a.created_at),
+      });
+    });
+
+    // Gateway session activity
+    activeSessions.slice(0, 3).forEach((s: any) => {
       const key    = s.key || 'unknown';
       const isMain = key === 'agent:main:main';
       const label  = isMain ? 'Main Session'
@@ -245,12 +284,9 @@ export function DashboardPage() {
         time:  timeAgo(s.lastActive),
       });
     });
-    const totalCompactions = sessions.reduce((n: number, s: any) => n + (s.compactions || 0), 0);
-    if (totalCompactions > 0) {
-      items.unshift({ color: themeHex('warning'), text: t('dashboardExtra.contextCompacted', { n: totalCompactions }), time: '—' });
-    }
+
     return items;
-  }, [activeSessions, sessions]);
+  }, [dashboard.recentActivity, activeSessions]);
 
   // ── Render ───────────────────────────────────────────────────
   return (
@@ -268,7 +304,7 @@ export function DashboardPage() {
             transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
             className="w-10 h-10 rounded-xl bg-gradient-to-br from-aegis-primary/15 to-aegis-primary/5 border border-aegis-primary/20 flex items-center justify-center"
           >
-            <Shield size={20} className="text-aegis-primary" />
+            <Scissors size={20} className="text-aegis-primary" />
           </motion.div>
           <div>
             <h1 className="text-[18px] font-bold text-aegis-text tracking-tight">
@@ -280,14 +316,30 @@ export function DashboardPage() {
 
         {/* Status + meta info */}
         <div className="flex items-center gap-3">
-          {/* Uptime + version (desktop only) */}
+          {/* Uptime + model (desktop only) */}
           <div className="hidden lg:flex items-center gap-3 text-[10px] font-mono text-aegis-text-muted">
             <span>{t('dashboard.uptime')}: <span className="text-aegis-text">{fmtUptime(uptime)}</span></span>
             <span className="opacity-30">·</span>
             <span>{shortModel !== '—' ? shortModel : t('dashboard.model')}</span>
           </div>
 
-          {/* Status badge */}
+          {/* Supabase status badge */}
+          <div className={clsx(
+            'flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[9px] font-bold tracking-wider',
+            sbStatus === 'connected'
+              ? 'bg-aegis-success/[0.06] border-aegis-success/20 text-aegis-success'
+              : sbStatus === 'error'
+              ? 'bg-aegis-danger-surface border-aegis-danger/20 text-aegis-danger'
+              : 'bg-aegis-warning-surface border-aegis-warning/20 text-aegis-warning'
+          )}>
+            <span className={clsx(
+              'w-1.5 h-1.5 rounded-full',
+              sbStatus === 'connected' ? 'bg-aegis-success' : sbStatus === 'error' ? 'bg-aegis-danger' : 'bg-aegis-warning'
+            )} />
+            {sbStatus === 'connected' ? 'SUPABASE LIVE' : sbStatus === 'error' ? 'SUPABASE OFFLINE' : 'CONNECTING'}
+          </div>
+
+          {/* Gateway status badge */}
           <div className={clsx(
             'flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-[11px] font-semibold',
             connected
@@ -310,7 +362,7 @@ export function DashboardPage() {
             onClick={handleRefresh}
             disabled={refreshing}
             className="p-1.5 rounded-lg hover:bg-[rgb(var(--aegis-overlay)/0.06)] transition-colors"
-            title={t('dashboard.refresh', 'Refresh')}
+            title="Refresh"
           >
             <RefreshCw
               size={15}
@@ -329,11 +381,164 @@ export function DashboardPage() {
         </div>
       </div>
 
-      {/* ════ SECTION 2: HERO CARDS (4 columns) ════ */}
+      {/* ════ SECTION 2: L&S BUSINESS HERO CARDS (4 columns) ════ */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
 
-        {/* 💰 Today's Cost */}
+        {/* ✂️ Active Orders */}
         <GlassCard delay={0.05} className="flex flex-col gap-2">
+          <div className="flex items-center gap-1.5 text-[10.5px] text-aegis-text-muted font-medium">
+            <Scissors size={13} className="text-aegis-primary" />
+            Active Orders
+          </div>
+          {sbLoading ? <SkeletonValue /> : (
+            <div className="text-[28px] font-bold text-aegis-text leading-none tracking-tight">
+              {dashboard.activeOrders}
+            </div>
+          )}
+          <div className="text-[10px] text-aegis-text-dim">in production pipeline</div>
+        </GlassCard>
+
+        {/* 👥 Total Clients */}
+        <GlassCard delay={0.08} className="flex flex-col gap-2">
+          <div className="flex items-center gap-1.5 text-[10.5px] text-aegis-text-muted font-medium">
+            <Users size={13} className="text-aegis-accent" />
+            Total Clients
+          </div>
+          {sbLoading ? <SkeletonValue /> : (
+            <div className="text-[28px] font-bold text-aegis-text leading-none tracking-tight">
+              {dashboard.totalClients.toLocaleString()}
+            </div>
+          )}
+          <div className="text-[10px] text-aegis-text-dim">in customer directory</div>
+        </GlassCard>
+
+        {/* 💰 Revenue MTD */}
+        <GlassCard delay={0.11} className="flex flex-col gap-2">
+          <div className="flex items-center gap-1.5 text-[10.5px] text-aegis-text-muted font-medium">
+            <DollarSign size={13} className="text-aegis-success" />
+            Revenue MTD
+          </div>
+          {sbLoading ? <SkeletonValue width={80} /> : (
+            <div className="text-[28px] font-bold text-aegis-text leading-none tracking-tight">
+              {fmtRevenue(dashboard.revenueMTD / 100)}
+            </div>
+          )}
+          <div className="text-[10px] text-aegis-text-dim">this month via Square</div>
+        </GlassCard>
+
+        {/* 📋 Pending Approvals */}
+        <GlassCard delay={0.14} className="flex flex-col gap-2">
+          <div className="flex items-center gap-1.5 text-[10.5px] text-aegis-text-muted font-medium">
+            <ClipboardCheck size={13} className="text-aegis-warning" />
+            Pending Approvals
+          </div>
+          {sbLoading ? <SkeletonValue width={40} /> : (
+            <div className="text-[28px] font-bold text-aegis-text leading-none tracking-tight">
+              {dashboard.pendingApprovals}
+            </div>
+          )}
+          <div className="text-[10px] text-aegis-text-dim">awaiting review</div>
+        </GlassCard>
+      </div>
+
+      {/* ════ SECTION 3: FITTINGS + ACTIVITY FEED ════ */}
+      <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-3">
+
+        {/* Today's Fittings */}
+        <GlassCard delay={0.16}>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Clock size={15} className="text-aegis-primary" />
+              <span className="text-[13px] font-semibold text-aegis-text">Today's Fittings</span>
+            </div>
+            <span className="text-[9px] font-mono text-aegis-text-muted">
+              {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+            </span>
+          </div>
+
+          <div className="space-y-1">
+            {sbLoading ? (
+              <div className="space-y-2 py-2">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="h-10 rounded-lg bg-[rgb(var(--aegis-overlay)/0.04)] animate-pulse" />
+                ))}
+              </div>
+            ) : dashboard.todaysFittings.length > 0 ? (
+              dashboard.todaysFittings.map((f: any) => (
+                <div key={f.id} className="flex items-center gap-3 p-2.5 rounded-[10px] hover:bg-[rgb(var(--aegis-overlay)/0.03)] transition-colors">
+                  <div className="w-[34px] h-[34px] rounded-lg bg-aegis-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Scissors size={14} className="text-aegis-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[12px] font-semibold text-aegis-text truncate">
+                      {f.customer_name || 'Client'}
+                    </div>
+                    <div className="text-[10px] text-aegis-text-muted font-mono flex gap-2 mt-0.5">
+                      <span>{f.time || '—'}</span>
+                      <span className="opacity-60">{f.type || 'fitting'}</span>
+                    </div>
+                  </div>
+                  <span className={clsx(
+                    'text-[9px] font-bold px-2 py-0.5 rounded-md tracking-wide flex-shrink-0',
+                    f.status === 'completed' ? 'bg-aegis-success/10 text-aegis-success'
+                    : f.status === 'cancelled' ? 'bg-aegis-danger/10 text-aegis-danger'
+                    : 'bg-aegis-primary/10 text-aegis-primary'
+                  )}>
+                    {(f.status || 'scheduled').toUpperCase()}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <div className="text-[11px] text-aegis-text-dim text-center py-8">
+                No fittings scheduled today
+              </div>
+            )}
+          </div>
+        </GlassCard>
+
+        {/* Activity Feed (Supabase + Gateway combined) */}
+        <GlassCard delay={0.18}>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Activity size={15} className="text-aegis-primary" />
+              <span className="text-[13px] font-semibold text-aegis-text">{t('dashboard.activity')}</span>
+            </div>
+            <span className="text-[8px] font-bold text-aegis-success bg-aegis-success-surface px-2 py-0.5 rounded-md tracking-wider animate-pulse-soft">
+              LIVE
+            </span>
+          </div>
+
+          <div className="max-h-[220px] overflow-y-auto scrollbar-hidden">
+            {sbLoading ? (
+              <div className="space-y-3 py-2">
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="h-8 rounded-lg bg-[rgb(var(--aegis-overlay)/0.04)] animate-pulse" />
+                ))}
+              </div>
+            ) : feedItems.length > 0 ? (
+              feedItems.map((item, i) => (
+                <FeedItem
+                  key={i}
+                  color={item.color}
+                  text={item.text}
+                  time={item.time}
+                  isLast={i === feedItems.length - 1}
+                />
+              ))
+            ) : (
+              <div className="text-[11px] text-aegis-text-dim text-center py-6">
+                No recent activity
+              </div>
+            )}
+          </div>
+        </GlassCard>
+      </div>
+
+      {/* ════ SECTION 4: AI COST CARDS (smaller row) ════ */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+
+        {/* 💰 AI Cost Today */}
+        <GlassCard delay={0.20} className="flex flex-col gap-2">
           <div className="flex items-center gap-1.5 text-[10.5px] text-aegis-text-muted font-medium">
             <DollarSign size={13} className="text-aegis-primary" />
             {t('dashboard.todayCost')}
@@ -356,8 +561,8 @@ export function DashboardPage() {
           )}
         </GlassCard>
 
-        {/* 📅 This Month */}
-        <GlassCard delay={0.08} className="flex flex-col gap-2">
+        {/* 📅 AI Cost This Month */}
+        <GlassCard delay={0.22} className="flex flex-col gap-2">
           <div className="flex items-center gap-1.5 text-[10.5px] text-aegis-text-muted font-medium">
             <BarChart3 size={13} className="text-aegis-accent" />
             {t('dashboard.thisMonth')}
@@ -365,16 +570,11 @@ export function DashboardPage() {
           <div className="text-[22px] font-bold text-aegis-text leading-none tracking-tight">
             {fmtCostShort(monthCost)}
           </div>
-          <div className="text-[11px] text-aegis-text-dim">
-            {t('dashboard.monthBudget')}
-          </div>
-          {spark30.length > 0 && (
-            <Sparkline data={spark30} color={themeHex('accent')} width={120} height={30} />
-          )}
+          <div className="text-[11px] text-aegis-text-dim">{t('dashboard.monthBudget')}</div>
         </GlassCard>
 
         {/* ⚡ Tokens Today */}
-        <GlassCard delay={0.11} className="flex flex-col gap-2">
+        <GlassCard delay={0.24} className="flex flex-col gap-2">
           <div className="flex items-center gap-1.5 text-[10.5px] text-aegis-text-muted font-medium">
             <Zap size={13} className="text-aegis-warning" />
             {t('dashboard.tokensToday')}
@@ -395,7 +595,7 @@ export function DashboardPage() {
         </GlassCard>
 
         {/* 🧠 Context */}
-        <GlassCard delay={0.14} className="flex flex-col gap-2">
+        <GlassCard delay={0.26} className="flex flex-col gap-2">
           <div className="flex items-center gap-1.5 text-[10.5px] text-aegis-text-muted font-medium">
             <Cpu size={13} className="text-aegis-danger" />
             {t('dashboard.contextCard')}
@@ -410,11 +610,11 @@ export function DashboardPage() {
         </GlassCard>
       </div>
 
-      {/* ════ SECTION 3: MIDDLE ROW (Chart + Agents) ════ */}
+      {/* ════ SECTION 5: CHART + AGENTS ════ */}
       <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-3">
 
         {/* Daily Cost Chart */}
-        <GlassCard delay={0.16}>
+        <GlassCard delay={0.28}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <TrendingUp size={15} className="text-aegis-primary" />
@@ -457,7 +657,7 @@ export function DashboardPage() {
         </GlassCard>
 
         {/* Active Agents */}
-        <GlassCard delay={0.18}>
+        <GlassCard delay={0.30}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Bot size={15} className="text-aegis-accent" />
@@ -501,11 +701,11 @@ export function DashboardPage() {
         </GlassCard>
       </div>
 
-      {/* ════ SECTION 4: BOTTOM ROW (3 columns) ════ */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+      {/* ════ SECTION 6: QUICK ACTIONS + SESSIONS ════ */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
 
-        {/* ── Quick Actions ── */}
-        <GlassCard delay={0.20}>
+        {/* Quick Actions */}
+        <GlassCard delay={0.32}>
           <div className="flex items-center gap-2 mb-3">
             <Zap size={15} className="text-aegis-accent" />
             <span className="text-[13px] font-semibold text-aegis-text">{t('dashboard.quickActions')}</span>
@@ -532,8 +732,8 @@ export function DashboardPage() {
           </div>
         </GlassCard>
 
-        {/* ── Sessions ── */}
-        <GlassCard delay={0.22}>
+        {/* Sessions */}
+        <GlassCard delay={0.34}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Bot size={15} className="text-aegis-accent" />
@@ -586,38 +786,14 @@ export function DashboardPage() {
             )}
           </div>
         </GlassCard>
-
-        {/* ── Activity Feed ── */}
-        <GlassCard delay={0.24}>
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Activity size={15} className="text-aegis-primary" />
-              <span className="text-[13px] font-semibold text-aegis-text">{t('dashboard.activity')}</span>
-            </div>
-            <span className="text-[8px] font-bold text-aegis-success bg-aegis-success-surface px-2 py-0.5 rounded-md tracking-wider animate-pulse-soft">
-              LIVE
-            </span>
-          </div>
-
-          <div className="max-h-[220px] overflow-y-auto scrollbar-hidden">
-            {feedItems.length > 0 ? (
-              feedItems.map((item, i) => (
-                <FeedItem
-                  key={i}
-                  color={item.color}
-                  text={item.text}
-                  time={item.time}
-                  isLast={i === feedItems.length - 1}
-                />
-              ))
-            ) : (
-              <div className="text-[11px] text-aegis-text-dim text-center py-6">
-                {connected ? t('dashboard.noActiveSessions') : t('dashboard.notConnected')}
-              </div>
-            )}
-          </div>
-        </GlassCard>
       </div>
+
+      {/* Supabase error banner */}
+      {sbError && (
+        <div className="text-[11px] text-aegis-danger bg-aegis-danger-surface border border-aegis-danger/20 rounded-xl px-4 py-2.5">
+          Supabase: {sbError}
+        </div>
+      )}
 
     </PageTransition>
   );

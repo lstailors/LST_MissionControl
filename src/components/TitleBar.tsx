@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useChatStore } from '@/stores/chatStore';
+import { useSupabaseStore } from '@/stores/supabaseStore';
 import { gateway } from '@/services/gateway';
 import { APP_VERSION } from '@/hooks/useAppVersion';
 import { ChevronDown, Check } from 'lucide-react';
@@ -377,6 +378,28 @@ function VersionBadge() {
   );
 }
 
+// ── Supabase connection indicator ─────────────────────────
+function SupabaseStatus() {
+  const status = useSupabaseStore((s) => s.status);
+  const isLive = status === 'connected';
+  const isErr  = status === 'error';
+  return (
+    <>
+      <span className="text-aegis-text-dim opacity-40">·</span>
+      <span className={clsx(
+        'flex items-center gap-[6px]',
+        isLive ? 'text-aegis-success' : isErr ? 'text-aegis-danger' : 'text-aegis-warning'
+      )}>
+        <span className={clsx(
+          'w-[6px] h-[6px] rounded-full',
+          isLive ? 'bg-aegis-success connected-glow' : isErr ? 'bg-aegis-danger' : 'bg-aegis-warning animate-pulse'
+        )} />
+        {isLive ? 'Supabase' : isErr ? 'SB Offline' : 'SB...'}
+      </span>
+    </>
+  );
+}
+
 // ═══════════════════════════════════════════════════════════
 export function TitleBar() {
   const { t } = useTranslation();
@@ -436,6 +459,7 @@ export function TitleBar() {
           )} />
           {connected ? 'Connected' : connecting ? 'Connecting...' : 'Disconnected'}
         </span>
+        <SupabaseStatus />
         </div>
       </div>
 
