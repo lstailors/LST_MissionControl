@@ -60,8 +60,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       });
       return { error: null };
     } catch (err: any) {
-      const url = (window as any).__SUPABASE_URL__ || 'unknown';
-      return { error: `${err.message} (url: ${url})` };
+      return { error: err.message || 'Sign in failed' };
     }
   },
 

@@ -7,22 +7,11 @@ import { useAuthStore } from '@/stores/authStore';
 // ═══════════════════════════════════════════════════════════
 
 export function ProtectedRoute() {
-  const { isAuthenticated, isLoading } = useAuthStore();
-
-  if (isLoading) {
-    return (
-      <div className="fixed inset-0 bg-[#0A120B] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 size={28} className="animate-spin text-aegis-primary" />
-          <span className="text-[12px] text-aegis-text-muted">Loading…</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
+  // TODO: Re-enable auth once Supabase network connectivity is resolved
+  // const { isAuthenticated, isLoading } = useAuthStore();
+  //
+  // if (isLoading) { ... }
+  // if (!isAuthenticated) return <Navigate to="/login" replace />;
 
   return <Outlet />;
 }

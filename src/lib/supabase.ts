@@ -11,8 +11,6 @@ if (!supabaseUrl || !supabaseAnonKey) {
 } else {
   // In dev mode, proxy through Vite to avoid browser network restrictions
   const effectiveUrl = import.meta.env.DEV ? '/supabase-proxy' : supabaseUrl;
-  // @ts-ignore — debug: expose URL for troubleshooting
-  (window as any).__SUPABASE_URL__ = effectiveUrl;
   supabase = createClient(effectiveUrl, supabaseAnonKey);
 }
 
