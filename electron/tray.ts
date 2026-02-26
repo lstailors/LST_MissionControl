@@ -16,7 +16,7 @@ export function createTray(mainWindow: BrowserWindow, app: App): Tray {
 
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: 'فتح L&S Mission Control',
+      label: 'Open L&S Mission Control',
       click: () => {
         mainWindow.show();
         mainWindow.focus();
@@ -24,7 +24,7 @@ export function createTray(mainWindow: BrowserWindow, app: App): Tray {
     },
     { type: 'separator' },
     {
-      label: '❌ إغلاق',
+      label: 'Quit',
       click: () => {
         (app as any).isQuitting = true;
         app.quit();

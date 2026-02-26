@@ -237,7 +237,7 @@ function createSplashWindow(): void {
     <body>
       <div class="logo">L&S</div>
       <div class="title">L&S Mission Control</div>
-      <div class="subtitle">جاري التحميل...</div>
+      <div class="subtitle">Loading...</div>
       <div class="spinner"></div>
     </body>
     </html>
@@ -326,11 +326,11 @@ function createWindow(): void {
 
     if (linkURL) {
       menuItems.push({
-        label: '🔗 فتح الرابط',
+        label: 'Open Link',
         click: () => shell.openExternal(linkURL),
       });
       menuItems.push({
-        label: '📋 نسخ الرابط',
+        label: 'Copy Link',
         click: () => clipboard.writeText(linkURL),
       });
       menuItems.push({ type: 'separator' });
@@ -338,7 +338,7 @@ function createWindow(): void {
 
     if (isEditable) {
       menuItems.push({
-        label: 'قص',
+        label: 'Cut',
         accelerator: 'CmdOrCtrl+X',
         enabled: editFlags.canCut,
         role: 'cut',
@@ -347,7 +347,7 @@ function createWindow(): void {
 
     if (selectionText || isEditable) {
       menuItems.push({
-        label: 'نسخ',
+        label: 'Copy',
         accelerator: 'CmdOrCtrl+C',
         enabled: editFlags.canCopy,
         role: 'copy',
@@ -356,7 +356,7 @@ function createWindow(): void {
 
     if (isEditable) {
       menuItems.push({
-        label: 'لصق',
+        label: 'Paste',
         accelerator: 'CmdOrCtrl+V',
         enabled: editFlags.canPaste,
         role: 'paste',
@@ -366,7 +366,7 @@ function createWindow(): void {
     if (isEditable || selectionText) {
       menuItems.push({ type: 'separator' });
       menuItems.push({
-        label: 'تحديد الكل',
+        label: 'Select All',
         accelerator: 'CmdOrCtrl+A',
         role: 'selectAll',
       });
@@ -573,7 +573,7 @@ function setupIPC(): void {
       };
 
       const result = await dialog.showSaveDialog(mainWindow!, {
-        title: 'حفظ الصورة',
+        title: 'Save Image',
         defaultPath: suggestedName,
         filters: [
           filterMap[ext.toLowerCase()] || { name: 'Image', extensions: [ext] },
@@ -614,7 +614,7 @@ function setupIPC(): void {
       // Show notification
       if (Notification.isSupported()) {
         new Notification({
-          title: 'تم حفظ الصورة',
+          title: 'Image Saved',
           body: path.basename(result.filePath),
           silent: true,
         }).show();
