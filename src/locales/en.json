@@ -25,6 +25,10 @@
     "skills": "Skills",
     "settings": "Settings",
     "terminal": "Terminal",
+    "orders": "Orders",
+    "customers": "Customers",
+    "calendar": "Calendar",
+    "invoices": "Invoices",
     "notifications": "Notifications"
   },
   "skills": {

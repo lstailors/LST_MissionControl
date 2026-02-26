@@ -9,7 +9,7 @@ import { motion } from 'framer-motion';
 import {
   LayoutDashboard, MessageCircle, Kanban, DollarSign,
   Clock, Bot, Settings, Brain, Activity, User, Puzzle,
-  Terminal, LogOut,
+  Terminal, LogOut, ClipboardList, Users, CalendarDays, Receipt,
 } from 'lucide-react';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -27,6 +27,10 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { to: '/', icon: LayoutDashboard, labelKey: 'nav.dashboard' },
+  { to: '/orders', icon: ClipboardList, labelKey: 'nav.orders' },
+  { to: '/customers', icon: Users, labelKey: 'nav.customers' },
+  { to: '/calendar', icon: CalendarDays, labelKey: 'nav.calendar' },
+  { to: '/invoices', icon: Receipt, labelKey: 'nav.invoices' },
   { to: '/chat', icon: MessageCircle, labelKey: 'nav.chat' },
   { to: '/workshop', icon: Kanban, labelKey: 'nav.workshop' },
   { to: '/cron', icon: Clock, labelKey: 'nav.cron' },

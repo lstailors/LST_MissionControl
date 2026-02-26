@@ -12,6 +12,10 @@ import { CronMonitorPage } from '@/pages/CronMonitor';
 import { AgentHubPage } from '@/pages/AgentHub';
 import { MemoryExplorerPage } from '@/pages/MemoryExplorer';
 import { SkillsPage as SkillsPageFull } from '@/pages/SkillsPage';
+import { OrdersPage } from '@/pages/Orders';
+import { CustomersPage } from '@/pages/Customers';
+import { CalendarPage } from '@/pages/Calendar';
+import { InvoicesPage } from '@/pages/Invoices';
 import { TerminalPage } from '@/pages/TerminalPage';
 import { SettingsPageFull } from '@/pages/SettingsPage';
 import { PairingScreen } from '@/components/PairingScreen';
@@ -321,6 +325,10 @@ export default function App() {
           <Route element={<ProtectedRoute />}>
             <Route element={<AppLayout />}>
               <Route path="/" element={<DashboardPage />} />
+              <Route path="/orders" element={<OrdersPage />} />
+              <Route path="/customers" element={<CustomersPage />} />
+              <Route path="/calendar" element={<CalendarPage />} />
+              <Route path="/invoices" element={<InvoicesPage />} />
               <Route path="/chat" element={<ChatPage />} />
               <Route path="/workshop" element={<WorkshopPage />} />
               <Route path="/costs" element={<FullAnalyticsPage />} />
