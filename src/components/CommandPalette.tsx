@@ -8,13 +8,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, MessageCircle, Kanban, DollarSign, Clock, Bot, Brain,
   Settings, Search, Wifi, WifiOff, Heart, Mail, Calendar, RefreshCw,
-  Globe, Bell, BellOff, Command
+  Bell, BellOff, Command
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useChatStore } from '@/stores/chatStore';
 import { gateway } from '@/services/gateway';
-import { changeLanguage } from '@/i18n';
 import clsx from 'clsx';
 
 interface PaletteCommand {
@@ -30,7 +29,7 @@ interface PaletteCommand {
 export function CommandPalette() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { commandPaletteOpen, setCommandPaletteOpen, language, setLanguage, notificationsEnabled, setNotificationsEnabled } = useSettingsStore();
+  const { commandPaletteOpen, setCommandPaletteOpen, notificationsEnabled, setNotificationsEnabled } = useSettingsStore();
   const { connected } = useChatStore();
   const [query, setQuery] = useState('');
   const [selectedIdx, setSelectedIdx] = useState(0);
@@ -69,11 +68,6 @@ export function CommandPalette() {
     }},
 
     // Settings
-    { id: 'set-lang', icon: Globe, name: t('palette.toggleLanguage'), keywords: ['language', 'لغة', 'english', 'عربي'], action: () => {
-      const newLang = language === 'ar' ? 'en' : 'ar';
-      setLanguage(newLang);
-      changeLanguage(newLang);
-    }},
     { id: 'set-notif', icon: notificationsEnabled ? BellOff : Bell, name: t('palette.toggleNotifications'), keywords: ['notifications', 'إشعارات'], action: () => {
       setNotificationsEnabled(!notificationsEnabled);
     }},

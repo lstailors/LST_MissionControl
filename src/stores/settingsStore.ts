@@ -47,23 +47,13 @@ interface SettingsState {
   setGatewayToken: (token: string) => void;
 }
 
-// Auto-detect language on first run: check saved → system language → fallback to English
-const detectLang = (): 'ar' | 'en' => {
-  const saved = localStorage.getItem('aegis-language');
-  if (saved === 'ar' || saved === 'en') return saved;
-  // First run — detect from system/browser language
-  const sysLang = navigator.language || navigator.languages?.[0] || '';
-  return sysLang.startsWith('ar') ? 'ar' : 'en';
-};
-const savedLang = detectLang();
-
 export const useSettingsStore = create<SettingsState>((set) => ({
   theme: (localStorage.getItem('aegis-theme') || 'dark') as 'dark' | 'light' | 'system',
   fontSize: 14,
   sidebarOpen: true,
   sidebarWidth: 280,
   settingsOpen: false,
-  language: savedLang,
+  language: 'en',
   notificationsEnabled: localStorage.getItem('aegis-notifications') !== 'false',
   soundEnabled: localStorage.getItem('aegis-sound') !== 'false',
   dndMode: false,

@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Settings, Bell, BellOff, Globe, Volume2, VolumeX,
+  Settings, Bell, BellOff, Volume2, VolumeX,
   Wifi, WifiOff, Palette, Cpu, CheckCircle, Loader2, Keyboard, Copy
 } from 'lucide-react';
 import { APP_VERSION } from '@/hooks/useAppVersion';
@@ -17,13 +17,11 @@ import { useChatStore } from '@/stores/chatStore';
 import { useGatewayDataStore } from '@/stores/gatewayDataStore';
 import { gateway } from '@/services/gateway';
 import { notifications } from '@/services/notifications';
-import { changeLanguage } from '@/i18n';
 import clsx from 'clsx';
 
 export function SettingsPageFull() {
   const { t } = useTranslation();
   const {
-    language, setLanguage,
     theme, setTheme,
     notificationsEnabled, setNotificationsEnabled,
     soundEnabled, setSoundEnabled,
@@ -49,11 +47,6 @@ export function SettingsPageFull() {
   const mainSession = sessions.find((s) => (s.key || '') === 'agent:main:main');
   const mainModel = mainSession?.model || '—';
   const contextTokens = mainSession?.contextTokens || 0;
-
-  const handleLanguageChange = (lang: 'ar' | 'en') => {
-    setLanguage(lang);
-    changeLanguage(lang);
-  };
 
   const handleNotificationsToggle = (enabled: boolean) => {
     setNotificationsEnabled(enabled);
@@ -195,38 +188,6 @@ export function SettingsPageFull() {
             )}
           >
             {t('settingsTheme.light')}
-          </button>
-        </div>
-      </GlassCard>
-
-      {/* Language */}
-      <GlassCard delay={0.05}>
-        <h3 className="text-[14px] font-semibold text-aegis-text mb-4 flex items-center gap-2">
-          <Globe size={16} className="text-aegis-primary" />
-          {t('settings.language')}
-        </h3>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => handleLanguageChange('ar')}
-            className={clsx(
-              'flex-1 py-3 rounded-xl text-[14px] font-medium border transition-colors',
-              language === 'ar'
-                ? 'bg-aegis-primary/15 border-aegis-primary/30 text-aegis-primary'
-                : 'border-aegis-border/20 text-aegis-text-dim hover:border-aegis-border/40'
-            )}
-          >
-            العربية
-          </button>
-          <button
-            onClick={() => handleLanguageChange('en')}
-            className={clsx(
-              'flex-1 py-3 rounded-xl text-[14px] font-medium border transition-colors',
-              language === 'en'
-                ? 'bg-aegis-primary/15 border-aegis-primary/30 text-aegis-primary'
-                : 'border-aegis-border/20 text-aegis-text-dim hover:border-aegis-border/40'
-            )}
-          >
-            English
           </button>
         </div>
       </GlassCard>
