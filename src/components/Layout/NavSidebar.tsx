@@ -7,7 +7,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import {
-  LayoutDashboard, MessageCircle, Kanban, DollarSign,
+  LayoutDashboard, MessageCircle, Hammer, DollarSign,
   Clock, Bot, Settings, Brain, Activity, User, Puzzle,
   Terminal,
 } from 'lucide-react';
@@ -25,7 +25,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { to: '/', icon: LayoutDashboard, labelKey: 'nav.dashboard' },
   { to: '/chat', icon: MessageCircle, labelKey: 'nav.chat' },
-  { to: '/workshop', icon: Kanban, labelKey: 'nav.workshop' },
+  { to: '/workshop', icon: Hammer, labelKey: 'nav.workshop' },
   { to: '/cron', icon: Clock, labelKey: 'nav.cron' },
   { to: '/agents', icon: Bot, labelKey: 'nav.agents' },
   { to: '/costs', icon: DollarSign, labelKey: 'nav.costs' },

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { AppLayout } from '@/components/Layout/AppLayout';
 import { DashboardPage } from '@/pages/Dashboard';
 import { ChatPage } from '@/pages/ChatPage';
-import { WorkshopPage } from '@/pages/Workshop';
+import { WorkshopPage } from '@/pages/Workshop/index';
 import { FullAnalyticsPage } from '@/pages/FullAnalytics';
 import { CronMonitorPage } from '@/pages/CronMonitor';
 import { AgentHubPage } from '@/pages/AgentHub';
