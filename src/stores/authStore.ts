@@ -60,7 +60,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       });
       return { error: null };
     } catch (err: any) {
-      return { error: err.message || 'Sign in failed' };
+      return { error: `[${err.name}] ${err.message}` || 'Sign in failed' };
     }
   },
 
