@@ -87,7 +87,7 @@ export function NavSidebar() {
       </div>
 
       {/* Navigation Icons */}
-      <nav className="flex-1 flex flex-col items-center gap-1">
+      <nav className="flex-1 min-h-0 overflow-y-auto scrollbar-hidden flex flex-col items-center gap-0.5 py-1">
         {navItems.map((item) => {
           const isActive = location.pathname === item.to ||
             (item.to !== '/' && location.pathname.startsWith(item.to));
@@ -98,7 +98,7 @@ export function NavSidebar() {
               to={item.to}
               aria-current={isActive ? 'page' : undefined}
               className={clsx(
-                'relative w-[44px] h-[44px] rounded-xl',
+                'relative w-[40px] h-[40px] rounded-xl flex-shrink-0',
                 'flex items-center justify-center',
                 'transition-all duration-300 group',
                 isActive
