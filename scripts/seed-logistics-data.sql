@@ -3,76 +3,54 @@
 -- Run this in Supabase SQL Editor (Dashboard → SQL → New Query)
 -- ═══════════════════════════════════════════════════════════════════
 
--- Step 1: Ensure shipments table exists
+-- Step 1a: Create shipments table if it doesn't exist at all
 CREATE TABLE IF NOT EXISTS shipments (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now(),
-
-  -- Identity
-  shipment_ref TEXT NOT NULL,
-  direction TEXT NOT NULL,
-  shipment_type TEXT NOT NULL,
-
-  -- Tracking
-  carrier TEXT,
-  tracking_number TEXT,
-  tracking_url TEXT,
-
-  -- Status
-  status TEXT DEFAULT 'label_created',
-  status_detail TEXT,
-  last_carrier_update TIMESTAMPTZ,
-
-  -- Location
-  current_location_city TEXT,
-  current_location_state TEXT,
-  current_location_country TEXT,
-
-  -- Origin
-  origin_name TEXT,
-  origin_city TEXT,
-  origin_state TEXT,
-  origin_country TEXT DEFAULT 'US',
-
-  -- Destination
-  destination_name TEXT,
-  destination_city TEXT,
-  destination_state TEXT,
-  destination_country TEXT DEFAULT 'US',
-
-  -- Related entities (nullable)
-  order_id UUID,
-  customer_id UUID,
-  mfg_order_id UUID,
-  fabric_order_id UUID,
-  supplier_id UUID,
-
-  -- Dates
-  ship_date TIMESTAMPTZ,
-  estimated_delivery TIMESTAMPTZ,
-  actual_delivery TIMESTAMPTZ,
-  delivery_signature TEXT,
-
-  -- Contents
-  package_count INTEGER DEFAULT 1,
-  weight_lbs DECIMAL(6,2),
-  contents_summary TEXT,
-  contents_value DECIMAL(10,2),
-
-  -- Source tracking
-  source TEXT DEFAULT 'manual',
-  source_email_id TEXT,
-
-  -- Alerts
-  has_alert BOOLEAN DEFAULT false,
-  alert_type TEXT,
-  alert_message TEXT,
-  alert_created_at TIMESTAMPTZ,
-
-  -- Notes
-  notes TEXT
+  updated_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- Step 1b: Add all required columns (safe — IF NOT EXISTS skips existing ones)
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS shipment_ref TEXT;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS direction TEXT;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS shipment_type TEXT;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS carrier TEXT;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS tracking_number TEXT;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS tracking_url TEXT;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'label_created';
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS status_detail TEXT;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS last_carrier_update TIMESTAMPTZ;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS current_location_city TEXT;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS current_location_state TEXT;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS current_location_country TEXT;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS origin_name TEXT;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS origin_city TEXT;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS origin_state TEXT;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS origin_country TEXT DEFAULT 'US';
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS destination_name TEXT;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS destination_city TEXT;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS destination_state TEXT;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS destination_country TEXT DEFAULT 'US';
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS order_id UUID;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS customer_id UUID;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS mfg_order_id UUID;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS fabric_order_id UUID;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS supplier_id UUID;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS ship_date TIMESTAMPTZ;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS estimated_delivery TIMESTAMPTZ;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS actual_delivery TIMESTAMPTZ;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS delivery_signature TEXT;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS package_count INTEGER DEFAULT 1;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS weight_lbs DECIMAL(6,2);
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS contents_summary TEXT;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS contents_value DECIMAL(10,2);
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS source TEXT DEFAULT 'manual';
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS source_email_id TEXT;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS has_alert BOOLEAN DEFAULT false;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS alert_type TEXT;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS alert_message TEXT;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS alert_created_at TIMESTAMPTZ;
+ALTER TABLE shipments ADD COLUMN IF NOT EXISTS notes TEXT;
 
 -- Step 2: Create indexes (idempotent)
 CREATE INDEX IF NOT EXISTS idx_shipments_status ON shipments(status);
