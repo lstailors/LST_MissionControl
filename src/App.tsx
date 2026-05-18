@@ -319,8 +319,8 @@ export default function App() {
         {/* In-app toast notifications — always visible, above all routes */}
         <ToastContainer />
         <Routes>
-          {/* Public route — temporarily redirects to dashboard while auth is bypassed */}
-          <Route path="/login" element={<Navigate to="/" replace />} />
+          {/* Public route */}
+          <Route path="/login" element={<LoginPage />} />
 
           {/* Protected routes — require Supabase auth */}
           <Route element={<ProtectedRoute />}>

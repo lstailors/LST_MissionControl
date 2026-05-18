@@ -7,11 +7,17 @@ import { useAuthStore } from '@/stores/authStore';
 // ═══════════════════════════════════════════════════════════
 
 export function ProtectedRoute() {
-  // TODO: Re-enable auth once Supabase network connectivity is resolved
-  // const { isAuthenticated, isLoading } = useAuthStore();
-  //
-  // if (isLoading) { ... }
-  // if (!isAuthenticated) return <Navigate to="/login" replace />;
+  const { isAuthenticated, isLoading } = useAuthStore();
+
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 bg-[#0A120B] flex items-center justify-center">
+        <Loader2 size={24} className="animate-spin text-aegis-primary" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
 
   return <Outlet />;
 }
